@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Pak Image generator | Pinterest Style Media Hub</title>
+    <!-- Font Awesome 6 (free icons, clean UI) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts for typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            padding-bottom: 72px;
+            color: #111;
+        }
+
+        /* App header */
+        .app-header {
+            background: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+            backdrop-filter: blur(2px);
+            background: rgba(255,255,255,0.96);
+        }
+        .app-header h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #e60023, #b5171e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        /* Main container & masonry grid */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 640px) {
+            .masonry-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* CARD STYLES — clean, large, minimal text */
+        .media-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .media-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(0,0,0,0.1);
+        }
+        .media-thumb {
+            width: 100%;
+            background: #e9ecef;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 4 / 5;
+        }
+        .media-thumb img, .media-thumb video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.2s;
+        }
+        .badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 0.3px;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .play-icon-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.65);
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+            z-index: 2;
+        }
+        .card-footer {
+            padding: 10px 12px 12px 12px;
+            background: white;
+        }
+        .photographer {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #5e5e5e;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* action bar overlay at bottom of thumbnail (always visible) */
+        .action-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            padding: 12px 10px 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 5;
+            opacity: 1;
+            backdrop-filter: blur(2px);
+        }
+        .action-btn {
+            background: rgba(255,255,255,0.92);
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #1e1e1e;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .action-btn:active { transform: scale(0.94); background: white; }
+        .action-btn.saved-active { color: #e60023; background: white; }
+        .action-btn.liked-active { color: #e60023; background: white; }
+
+        /* bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 12px 18px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            z-index: 30;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.03);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #5e5e5e;
+            transition: color 0.2s;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 40px;
+        }
+        .nav-item i { font-size: 1.45rem; }
+        .nav-item.active { color: #e60023; background: #fff0f0; }
+        .search-bar-area {
+            margin-bottom: 24px;
+        }
+        .search-input-wrapper {
+            display: flex;
+            background: white;
+            border-radius: 60px;
+            padding: 6px 18px;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #e2e2e2;
+        }
+        .search-input-wrapper i { color: #a0a0a0; font-size: 1.2rem; }
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            padding: 12px 0;
+            background: transparent;
+        }
+        .load-more-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            margin: 30px auto 20px;
+            display: block;
+            width: fit-content;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .load-more-btn:hover { background: #f0f0f0; transform: scale(0.98);}
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8f8f8f;
+            font-weight: 500;
+        }
+        /* MODAL STYLES (clean fullscreen) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            padding: 16px;
+        }
+        .modal-content {
+            max-width: 95vw;
+            max-height: 90vh;
+            background: #0f0f0f;
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.5);
+        }
+        .modal-media {
+            width: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-media img, .modal-media video {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            width: auto;
+            margin: 0 auto;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            padding: 20px;
+            background: #111;
+            border-top: 1px solid #2a2a2a;
+        }
+        .modal-action-btn {
+            background: #2c2c2c;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-action-btn:active { transform: scale(0.92); background: #444;}
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        .loader {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #a0a0a0;
+        }
+        button {
+            background: none;
+            border: none;
+        }
+        /* responsiveness */
+        @media (max-width: 480px) {
+            .action-btn { width: 34px; height: 34px; font-size: 1rem;}
+            .card-footer .photographer { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1><i class="fab fa-pinterest-p" style="color:#e60023;"></i> Pak Image generator</h1>
+</div>
+
+<div class="container" id="mainContainer">
+    <!-- dynamic tabs content -->
+    <div id="tabContent"></div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+    <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
+    <button class="nav-item" data-tab="search"><i class="fas fa-search"></i><span>Search</span></button>
+    <button class="nav-item" data-tab="trending"><i class="fas fa-fire"></i><span>Trending</span></button>
+    <button class="nav-item" data-tab="saved"><i class="fas fa-bookmark"></i><span>Saved</span></button>
+    <button class="nav-item" data-tab="downloads"><i class="fas fa-download"></i><span>Downloads</span></button>
+</div>
+
+<script>
+    // ---------- CONFIG ----------
+    const APP_NAME = "Pak Image generator";
+    const PEXELS_API_KEY = "aqk6goJsaNAPGcNQAr18V5e69l1GKdt7i7bmcm8mVIiRkdjpPJ8OSgU1";
+    const API_HEADERS = { Authorization: PEXELS_API_KEY };
+
+    // ---------- GLOBAL STATE ----------
+    let activeTab = "home";
+    let currentSearchQuery = "";
+    let searchDebounceTimer = null;
+    
+    // Pagination & Data for feeds
+    let homeData = { photos: [], videos: [], photoPage: 1, videoPage: 1, hasMorePhotos: true, hasMoreVideos: true, loading: false };
+    let trendingData = { photos: [], videos: [], photoPage: 1, videoPage: 1, hasMorePhotos: true, hasMoreVideos: true };
+    let searchData = { photos: [], videos: [], photoPage: 1, videoPage: 1, hasMorePhotos: true, hasMoreVideos: true, query: "" };
+    
+    // saved & downloads arrays (localStorage)
+    let savedItems = [];     // { id, type, url, preview, photographer }
+    let downloadedItems = [];
+    
+    // Helper: Load from storage
+    function loadStorage() {
+        const savedRaw = localStorage.getItem("pak_saved_items");
+        if(savedRaw) savedItems = JSON.parse(savedRaw);
+        const downRaw = localStorage.getItem("pak_downloaded_items");
+        if(downRaw) downloadedItems = JSON.parse(downRaw);
+    }
+    function saveSavedToStorage() { localStorage.setItem("pak_saved_items", JSON.stringify(savedItems)); }
+    function saveDownloadsToStorage() { localStorage.setItem("pak_downloaded_items", JSON.stringify(downloadedItems)); }
+    
+    // Download core (fetch blob)
+    async function downloadFile(url, filename) {
+        try {
+            const response = await fetch(url, { mode: "cors" });
+            if(!response.ok) throw new Error("Download failed");
+            const blob = await response.blob();
+            const blobURL = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobURL;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(blobURL);
+            return true;
+        } catch(e) { console.warn(e); return false; }
+    }
+    
+    // Add to downloaded items after successful download
+    async function triggerDownload(media, type) {
+        const url = (type === "photo") ? media.src?.large || media.url : media.videoUrl;
+        if(!url) return;
+        const ext = type === "photo" ? "jpg" : "mp4";
+        const filename = `${type}_${media.id}.${ext}`;
+        const success = await downloadFile(url, filename);
+        if(success) {
+            // avoid duplicate in downloadedItems
+            if(!downloadedItems.some(item => item.id === media.id && item.type === type)) {
+                downloadedItems.unshift({ id: media.id, type, url: media.url || media.videoUrl, preview: media.preview, photographer: media.photographer });
+                saveDownloadsToStorage();
+                if(activeTab === "downloads") renderCurrentTab();
+            }
+        }
+    }
+    
+    // Save/unsave logic
+    function toggleSave(mediaItem) {
+        const exists = savedItems.some(s => s.id === mediaItem.id && s.type === mediaItem.type);
+        if(exists) {
+            savedItems = savedItems.filter(s => !(s.id === mediaItem.id && s.type === mediaItem.type));
+        } else {
+            savedItems.unshift({ id: mediaItem.id, type: mediaItem.type, url: mediaItem.url, preview: mediaItem.preview, photographer: mediaItem.photographer });
+        }
+        saveSavedToStorage();
+        if(activeTab === "saved") renderCurrentTab();
+        else if(activeTab === "home" || activeTab === "trending" || (activeTab === "search")) renderCurrentTab();
+    }
+    
+    function isSaved(id, type) { return savedItems.some(s => s.id === id && s.type === type); }
+    
+    // ---------- API FETCH helpers ----------
+    async function fetchPhotos(page = 1, perPage = 12, query = null) {
+        let endpoint = query ? `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}` : `https://api.pexels.com/v1/curated?page=${page}&per_page=${perPage}`;
+        const res = await fetch(endpoint, { headers: API_HEADERS });
+        const json = await res.json();
+        if(!json.photos) return [];
+        return json.photos.map(p => ({ id: p.id, type: "photo", url: p.src.large, preview: p.src.medium, photographer: p.photographer, src: p.src }));
+    }
+    async function fetchVideos(page = 1, perPage = 12, query = null) {
+        let endpoint = query ? `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}` : `https://api.pexels.com/videos/popular?page=${page}&per_page=${perPage}`;
+        const res = await fetch(endpoint, { headers: API_HEADERS });
+        const json = await res.json();
+        if(!json.videos) return [];
+        return json.videos.map(v => {
+            const videoFile = v.video_files.find(f => f.quality === 'hd') || v.video_files[0];
+            return { id: v.id, type: "video", url: videoFile?.link, preview: v.image, photographer: v.user.name, videoUrl: videoFile?.link, thumbnail: v.image };
+        });
+    }
+    
+    // Interleave arrays
+    function interleaveArrays(photosArr, videosArr) {
+        const maxLen = Math.max(photosArr.length, videosArr.length);
+        let result = [];
+        for(let i=0; i<maxLen; i++) {
+            if(i < photosArr.length) result.push(photosArr[i]);
+            if(i < videosArr.length) result.push(videosArr[i]);
+        }
+        return result;
+    }
+    
+    // Load Home (initial + load more)
+    async function loadHome(reset = false) {
+        if(homeData.loading) return;
+        homeData.loading = true;
+        if(reset) { homeData.photos = []; homeData.videos = []; homeData.photoPage = 1; homeData.videoPage = 1; homeData.hasMorePhotos = true; homeData.hasMoreVideos = true; }
+        const photoPromise = homeData.hasMorePhotos ? fetchPhotos(homeData.photoPage, 12, null) : Promise.resolve([]);
+        const videoPromise = homeData.hasMoreVideos ? fetchVideos(homeData.videoPage, 12, null) : Promise.resolve([]);
+        const [newPhotos, newVideos] = await Promise.all([photoPromise, videoPromise]);
+        if(newPhotos.length < 12) homeData.hasMorePhotos = false;
+        if(newVideos.length < 12) homeData.hasMoreVideos = false;
+        homeData.photos = [...homeData.photos, ...newPhotos];
+        homeData.videos = [...homeData.videos, ...newVideos];
+        if(newPhotos.length) homeData.photoPage++;
+        if(newVideos.length) homeData.videoPage++;
+        homeData.loading = false;
+        if(activeTab === "home") renderCurrentTab();
+    }
+    
+    async function loadTrending(reset=false) {
+        if(reset) { trendingData.photos = []; trendingData.videos = []; trendingData.photoPage=1; trendingData.videoPage=1; trendingData.hasMorePhotos=true; trendingData.hasMoreVideos=true; }
+        const [newPhotos, newVideos] = await Promise.all([
+            trendingData.hasMorePhotos ? fetchPhotos(trendingData.photoPage, 12, null) : Promise.resolve([]),
+            trendingData.hasMoreVideos ? fetchVideos(trendingData.videoPage, 12, null) : Promise.resolve([])
+        ]);
+        if(newPhotos.length<12) trendingData.hasMorePhotos=false;
+        if(newVideos.length<12) trendingData.hasMoreVideos=false;
+        trendingData.photos = [...trendingData.photos, ...newPhotos];
+        trendingData.videos = [...trendingData.videos, ...newVideos];
+        if(newPhotos.length) trendingData.photoPage++;
+        if(newVideos.length) trendingData.videoPage++;
+        if(activeTab==="trending") renderCurrentTab();
+    }
+    
+    async function loadSearch(query, reset=true) {
+        if(!query || query.length < 2) { if(activeTab==="search" && reset && query.length===0) renderEmptySearch(); return; }
+        if(reset) { searchData.photos = []; searchData.videos = []; searchData.photoPage=1; searchData.videoPage=1; searchData.hasMorePhotos=true; searchData.hasMoreVideos=true; searchData.query=query; }
+        const [newPhotos, newVideos] = await Promise.all([
+            searchData.hasMorePhotos ? fetchPhotos(searchData.photoPage, 12, query) : Promise.resolve([]),
+            searchData.hasMoreVideos ? fetchVideos(searchData.videoPage, 12, query) : Promise.resolve([])
+        ]);
+        if(newPhotos.length<12) searchData.hasMorePhotos=false;
+        if(newVideos.length<12) searchData.hasMoreVideos=false;
+        searchData.photos = [...searchData.photos, ...newPhotos];
+        searchData.videos = [...searchData.videos, ...newVideos];
+        if(newPhotos.length) searchData.photoPage++;
+        if(newVideos.length) searchData.videoPage++;
+        if(activeTab==="search") renderCurrentTab();
+    }
+    
+    // Render functions
+    function createMediaCard(item) {
+        const card = document.createElement("div");
+        card.className = "media-card";
+        const isVideo = item.type === "video";
+        const previewUrl = isVideo ? item.preview : item.url;
+        const mediaId = item.id;
+        const savedState = isSaved(mediaId, item.type);
+        card.innerHTML = `
+            <div class="media-thumb">
+                <img src="${previewUrl}" alt="" loading="lazy">
+                <div class="badge"><i class="fas ${isVideo ? 'fa-video' : 'fa-camera'}"></i> ${isVideo ? 'VIDEO' : 'PHOTO'}</div>
+                ${isVideo ? '<div class="play-icon-overlay"><i class="fas fa-play"></i></div>' : ''}
+                <div class="action-overlay">
+                    <button class="action-btn like-btn" data-id="${mediaId}" data-type="${item.type}"><i class="far fa-heart"></i></button>
+                    <button class="action-btn save-btn ${savedState ? 'saved-active' : ''}" data-id="${mediaId}" data-type="${item.type}"><i class="${savedState ? 'fas fa-bookmark' : 'far fa-bookmark'}"></i></button>
+                    <button class="action-btn download-btn" data-id="${mediaId}" data-type="${item.type}"><i class="fas fa-download"></i></button>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="photographer"><i class="fas fa-user-circle"></i> ${item.photographer || "Anonymous"}</div>
+            </div>
+        `;
+        const thumbDiv = card.querySelector(".media-thumb");
+        thumbDiv.addEventListener("click", (e) => {
+            if(e.target.closest('.action-btn')) return;
+            openModal(item);
+        });
+        // like just UI toggle (non persistent)
+        const likeBtn = card.querySelector(".like-btn");
+        likeBtn.addEventListener("click", (e) => { e.stopPropagation(); const icon = likeBtn.querySelector("i"); icon.classList.toggle("fas"); icon.classList.toggle("far"); if(icon.classList.contains("fas")) icon.style.color="#e60023"; else icon.style.color=""; });
+        const saveBtn = card.querySelector(".save-btn");
+        saveBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleSave(item); renderCurrentTab(); });
+        const downloadBtn = card.querySelector(".download-btn");
+        downloadBtn.addEventListener("click", async (e) => { e.stopPropagation(); await triggerDownload(item, item.type); });
+        return card;
+    }
+    
+    function renderGrid(itemsArray) {
+        const gridDiv = document.createElement("div");
+        gridDiv.className = "masonry-grid";
+        if(!itemsArray.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.innerHTML = "<i class='fas fa-folder-open'></i><p>No media found</p>";
+            return empty;
+        }
+        itemsArray.forEach(item => { gridDiv.appendChild(createMediaCard(item)); });
+        return gridDiv;
+    }
+    
+    function renderCurrentTab() {
+        const container = document.getElementById("tabContent");
+        container.innerHTML = "";
+        if(activeTab === "home") {
+            const allMedia = interleaveArrays(homeData.photos, homeData.videos);
+            container.appendChild(renderGrid(allMedia));
+            if(homeData.hasMorePhotos || homeData.hasMoreVideos) {
+                const loadBtn = document.createElement("button");
+                loadBtn.className = "load-more-btn"; loadBtn.innerHTML = "<i class='fas fa-plus-circle'></i> Load More";
+                loadBtn.onclick = () => loadHome(false);
+                container.appendChild(loadBtn);
+            }
+        } else if(activeTab === "trending") {
+            const allMedia = interleaveArrays(trendingData.photos, trendingData.videos);
+            container.appendChild(renderGrid(allMedia));
+            if(trendingData.hasMorePhotos || trendingData.hasMoreVideos) {
+                const btn = document.createElement("button"); btn.className="load-more-btn"; btn.innerHTML="Load More 🔥"; btn.onclick=()=>loadTrending(false);
+                container.appendChild(btn);
+            }
+        } else if(activeTab === "search") {
+            const searchWrapper = document.createElement("div");
+            searchWrapper.className = "search-bar-area";
+            searchWrapper.innerHTML = `<div class="search-input-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" class="search-input" placeholder="Search photos & videos..." autocomplete="off"></div>`;
+            container.appendChild(searchWrapper);
+            const searchInput = searchWrapper.querySelector("#searchInput");
+            searchInput.value = currentSearchQuery;
+            searchInput.addEventListener("input", (e) => {
+                clearTimeout(searchDebounceTimer);
+                const val = e.target.value.trim();
+                currentSearchQuery = val;
+                if(val.length >= 2) {
+                    searchDebounceTimer = setTimeout(() => { loadSearch(val, true); }, 500);
+                } else if(val.length === 0) { searchData.photos = []; searchData.videos = []; renderEmptySearch(); }
+            });
+            const allMedia = interleaveArrays(searchData.photos, searchData.videos);
+            if(currentSearchQuery.length >=2) container.appendChild(renderGrid(allMedia));
+            else { const infoDiv = document.createElement("div"); infoDiv.className="empty-state"; infoDiv.innerHTML="🔍 Type at least 2 letters to search"; container.appendChild(infoDiv); }
+            if((searchData.hasMorePhotos || searchData.hasMoreVideos) && currentSearchQuery.length>=2) {
+                const moreBtn = document.createElement("button"); moreBtn.className="load-more-btn"; moreBtn.innerHTML="Load more results"; moreBtn.onclick=()=>loadSearch(currentSearchQuery, false);
+                container.appendChild(moreBtn);
+            }
+        } else if(activeTab === "saved") {
+            if(savedItems.length===0) { const emptyDiv=document.createElement("div"); emptyDiv.className="empty-state"; emptyDiv.innerHTML="<i class='far fa-bookmark'></i> No saved items yet"; container.appendChild(emptyDiv); return; }
+            const savedCards = savedItems.map(item => createMediaCard(item));
+            const grid = document.createElement("div"); grid.className="masonry-grid";
+            savedCards.forEach(c=>grid.appendChild(c));
+            container.appendChild(grid);
+        } else if(activeTab === "downloads") {
+            if(downloadedItems.length===0) { const emptyDiv=document.createElement("div"); emptyDiv.className="empty-state"; emptyDiv.innerHTML="<i class='fas fa-download'></i> No downloads history"; container.appendChild(emptyDiv); return; }
+            const downCards = downloadedItems.map(item => createMediaCard(item));
+            const grid = document.createElement("div"); grid.className="masonry-grid";
+            downCards.forEach(c=>grid.appendChild(c));
+            container.appendChild(grid);
+        }
+    }
+    function renderEmptySearch() { renderCurrentTab(); }
+    
+    // MODAL handling for photo / video (clean)
+    let currentModalItem = null;
+    function openModal(item) {
+        const isVideo = item.type === "video";
+        const modalDiv = document.createElement("div");
+        modalDiv.className = "modal-overlay";
+        const mediaUrl = isVideo ? item.url : item.url;
+        modalDiv.innerHTML = `
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+            <div class="modal-content">
+                <div class="modal-media">
+                    ${isVideo ? `<video controls autoplay src="${mediaUrl}" style="max-width:100%; max-height:70vh;"></video>` : `<img src="${item.url}" alt="" style="max-width:100%; max-height:70vh;">`}
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-action-btn like-modal" data-id="${item.id}" data-type="${item.type}"><i class="far fa-heart"></i></button>
+                    <button class="modal-action-btn save-modal" data-id="${item.id}" data-type="${item.type}"><i class="${isSaved(item.id,item.type) ? 'fas fa-bookmark' : 'far fa-bookmark'}"></i></button>
+                    <button class="modal-action-btn download-modal"><i class="fas fa-download"></i></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        const closeBtn = modalDiv.querySelector(".close-modal");
+        closeBtn.onclick = () => modalDiv.remove();
+        modalDiv.addEventListener("click", (e) => { if(e.target === modalDiv) modalDiv.remove(); });
+        const likeModal = modalDiv.querySelector(".like-modal");
+        likeModal.onclick = () => { const icon = likeModal.querySelector("i"); icon.classList.toggle("fas"); icon.classList.toggle("far"); if(icon.classList.contains("fas")) icon.style.color="#e60023"; else icon.style.color=""; };
+        const saveModal = modalDiv.querySelector(".save-modal");
+        saveModal.onclick = () => { toggleSave(item); const icon = saveModal.querySelector("i"); const savedNow = isSaved(item.id, item.type); icon.className = savedNow ? "fas fa-bookmark" : "far fa-bookmark"; if(activeTab==="saved") renderCurrentTab(); };
+        const downloadModal = modalDiv.querySelector(".download-modal");
+        downloadModal.onclick = async () => { await triggerDownload(item, item.type); };
+    }
+    
+    // Tab navigation
+    function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
+        document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+        if(tab === "home") { if(homeData.photos.length===0 && homeData.videos.length===0) loadHome(true); else renderCurrentTab(); }
+        if(tab === "trending") { if(trendingData.photos.length===0 && trendingData.videos.length===0) loadTrending(true); else renderCurrentTab(); }
+        if(tab === "search") { renderCurrentTab(); }
+        if(tab === "saved") { renderCurrentTab(); }
+        if(tab === "downloads") { renderCurrentTab(); }
+    }
+    
+    // initial load
+    function init() {
+        loadStorage();
+        loadHome(true);
+        loadTrending(true);
+        document.querySelectorAll(".nav-item").forEach(btn => {
+            btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+        });
+        switchTab("home");
+    }
+    init();
+</script>
+</body>
+</html>
