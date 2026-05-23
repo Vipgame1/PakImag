@@ -1,1203 +1,1067 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Mreward PRO - Pakistan</title>
-  <meta name="theme-color" content="#01411C">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <style>
-    :root{--primary:#01411C;--primary-light:#015C28;--accent:#C8A951;--accent-light:#F0D060;--background:#f5f7f5;--surface:#fff;--text-primary:#1a2e1a;--text-secondary:#5a7a5a;--success:#2e7d32;--error:#c62828;--warning:#f57c00;--border:#d8e8d8;--radius:14px;--shadow:0 4px 12px rgba(1,65,28,0.1);--shadow-lg:0 8px 30px rgba(1,65,28,0.15);}
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
-    html,body{height:100%;overflow-x:hidden;background:var(--background);color:var(--text-primary);}
-    /* AUTH */
-    .auth-container{position:fixed;top:0;left:0;width:100%;height:100vh;background:linear-gradient(160deg,#01411C 0%,#015C28 50%,#01411C 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px;z-index:9999;overflow-y:auto;}
-    .auth-container.hidden{display:none;}
-    .pk-flag-bar{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
-    .pk-flag-bar span{font-size:26px;}
-    .pk-flag-text{color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .app-logo{text-align:center;margin-bottom:24px;}
-    .logo-icon{width:74px;height:74px;border-radius:22px;background:rgba(200,169,81,0.2);border:2px solid rgba(200,169,81,0.45);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;font-weight:800;color:var(--accent-light);box-shadow:0 8px 32px rgba(0,0,0,0.25);}
-    .app-title{font-size:26px;font-weight:700;color:#fff;margin-bottom:4px;}
-    .app-subtitle{font-size:13px;color:rgba(255,255,255,0.75);}
-    .pk-badge{display:inline-block;background:rgba(200,169,81,0.18);border:1px solid rgba(200,169,81,0.4);color:var(--accent-light);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px;}
-    .login-card{width:100%;max-width:370px;background:rgba(255,255,255,0.97);border-radius:22px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2);border:1px solid rgba(200,169,81,0.2);}
-    .form-title{font-size:20px;font-weight:700;color:var(--primary);margin-bottom:4px;text-align:center;}
-    .form-subtitle{font-size:12px;color:var(--text-secondary);text-align:center;margin-bottom:22px;}
-    .input-label{display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:5px;}
-    .input-field{width:100%;height:50px;padding:0 16px;border:2px solid var(--border);border-radius:12px;font-size:16px;background:#fff;transition:all 0.3s;outline:none;margin-bottom:12px;}
-    .input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,65,28,0.1);}
-    .btn-primary{width:100%;height:50px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all 0.3s;}
-    .btn-primary:active{transform:scale(0.98);}
-    .btn-secondary{width:100%;height:50px;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s;}
-    .btn-secondary:active{background:var(--primary);color:#fff;}
-    .form-message{text-align:center;padding:10px 14px;border-radius:10px;font-size:13px;margin-top:10px;min-height:18px;}
-    .form-message.error{background:#ffebee;color:#c62828;}
-    .form-message.success{background:#e8f5e9;color:#2e7d32;}
-    .form-message.info{background:#e3f2fd;color:#1565c0;}
-    /* REFERRAL INPUT ON AUTH */
-    .ref-input-wrap{margin-top:8px;margin-bottom:4px;}
-    .ref-optional-lbl{font-size:11px;color:var(--text-secondary);text-align:center;margin-bottom:6px;display:block;}
-    /* MAIN APP */
-    .main-app{width:100%;height:100vh;display:none;flex-direction:column;background:var(--background);}
-    .main-app.visible{display:flex;}
-    .app-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-lg);}
-    .header-left{display:flex;align-items:center;gap:10px;}
-    .header-logo{width:36px;height:36px;border-radius:9px;background:rgba(200,169,81,0.2);border:1px solid rgba(200,169,81,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent-light);}
-    .header-title{font-size:18px;font-weight:700;}
-    .header-coins{display:flex;align-items:center;gap:6px;background:rgba(200,169,81,0.18);border:1px solid rgba(200,169,81,0.35);padding:5px 12px;border-radius:20px;font-size:13px;font-weight:700;color:var(--accent-light);}
-    .content-container{flex:1;overflow-y:auto;padding:18px;padding-bottom:90px;}
-    .card{background:var(--surface);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border);}
-    .card-title{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--border);display:flex;padding:6px 0 8px;box-shadow:0 -4px 15px rgba(1,65,28,0.1);}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px;color:var(--text-secondary);font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;gap:2px;}
-    .nav-item.active{color:var(--primary);}
-    .nav-icon{font-size:22px;}
-    .hidden{display:none!important;}
-    .tab-content.hidden{display:none!important;}
-    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-    .stat-card{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:18px;border-radius:var(--radius);text-align:center;cursor:pointer;transition:transform 0.25s;position:relative;overflow:hidden;border:1px solid rgba(200,169,81,0.2);}
-    .stat-card:active{transform:scale(0.97);}
-    .stat-value{font-size:24px;font-weight:800;margin-bottom:3px;color:var(--accent-light);}
-    .stat-label{font-size:11px;opacity:0.85;font-weight:500;}
-    .btn{padding:10px 16px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.25s;background:var(--primary);color:#fff;display:inline-block;}
-    .btn:active{transform:scale(0.97);}
-    .btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);}
-    .btn.ghost:active{background:var(--primary);color:#fff;}
-    .btn.green{background:var(--success);color:#fff;}
-    .btn.gold{background:linear-gradient(135deg,#C8A951,#F0D060);color:#1a2e1a;}
-    .btn-enhanced{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;width:100%;margin-top:12px;}
-    .btn-enhanced:active{transform:scale(0.98);}
-    .btn-enhanced:disabled{opacity:0.55;cursor:not-allowed;}
-    .list{max-height:320px;overflow-y:auto;}
-    .list-item{padding:13px;border-radius:12px;background:#f8faf8;margin-bottom:10px;border:1px solid var(--border);}
-    .small{font-size:12px;color:var(--text-secondary);}
-    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
-    .badge.pending{background:#fff3e0;color:#e65100;}
-    .badge.approved{background:#e8f5e9;color:#2e7d32;}
-    .badge.rejected{background:#ffebee;color:#c62828;}
-    /* WHEEL */
-    .wheel-wrapper{text-align:center;padding:8px 0;}
-    #wheel-of-fortune{width:230px;height:230px;border-radius:50%;background:conic-gradient(from 0deg,#01411C 0deg 45deg,#C8A951 45deg 90deg,#015C28 90deg 135deg,#F0D060 135deg 180deg,#01411C 180deg 225deg,#C8A951 225deg 270deg,#015C28 270deg 315deg,#F0D060 315deg 360deg);margin:0 auto;position:relative;border:8px solid #fff;box-shadow:0 8px 30px rgba(1,65,28,0.3);transition:transform 4s cubic-bezier(0.25,0.1,0.25,1);display:flex;align-items:center;justify-content:center;}
-    .wl{position:absolute;font-size:16px;font-weight:800;color:#fff;text-shadow:1px 1px 3px rgba(0,0,0,0.7);}
-    .wheel-pointer{width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:36px solid var(--primary);margin:0 auto;position:relative;filter:drop-shadow(0 3px 5px rgba(0,0,0,0.3));}
-    #spinner-result{position:absolute;top:9px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;font-weight:800;width:32px;text-align:center;}
-    /* ===== PROFESSIONAL PAYMENT LOGOS ===== */
-    .withdraw-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .withdraw-option{background:#fff;border:2px solid var(--border);border-radius:16px;padding:16px 10px 12px;text-align:center;transition:all 0.22s;cursor:pointer;box-shadow:0 2px 8px rgba(1,65,28,0.06);}
-    .withdraw-option:active{transform:scale(0.97);border-color:var(--primary);box-shadow:0 4px 16px rgba(1,65,28,0.15);}
-    .pay-logo-wrap{width:64px;height:64px;border-radius:16px;background:#f8f8f8;border:1.5px solid #ececec;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
-    .pay-logo{width:48px;height:48px;object-fit:contain;}
-    .bank-logo-wrap{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-color:#90caf9;}
-    .withdraw-name{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:3px;}
-    .withdraw-min{font-size:10px;color:var(--text-secondary);margin-bottom:10px;font-weight:500;}
-    .withdraw-btn{width:100%;font-size:12px;padding:9px 6px;border-radius:10px;font-weight:700;letter-spacing:0.2px;}
-    /* ===== REFERRAL BOX ===== */
-    .ref-box{background:linear-gradient(135deg,#f0f9f0,#e8f5e9);border:2px dashed var(--primary);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;}
-    .ref-code-text{font-size:22px;font-weight:800;color:var(--primary);letter-spacing:3px;}
-    .ref-stats{display:flex;gap:10px;margin-top:12px;}
-    .ref-stat-box{flex:1;background:#fff;border-radius:10px;padding:10px;text-align:center;border:1px solid var(--border);}
-    .ref-stat-val{font-size:20px;font-weight:800;color:var(--primary);}
-    .ref-stat-lbl{font-size:10px;color:var(--text-secondary);margin-top:2px;}
-    /* ===== WITHDRAWAL HISTORY CARDS ===== */
-    .w-history-wrap{display:flex;flex-direction:column;gap:12px;margin-top:4px;}
-    .w-card{background:#fff;border-radius:16px;padding:16px;border:1.5px solid var(--border);box-shadow:0 3px 12px rgba(1,65,28,0.07);position:relative;overflow:hidden;}
-    .w-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:5px 0 0 5px;}
-    .w-card.processing::before{background:linear-gradient(180deg,#ff9800,#f57c00);}
-    .w-card.completed::before{background:linear-gradient(180deg,#4caf50,#2e7d32);}
-    .w-card.rejected::before{background:linear-gradient(180deg,#f44336,#c62828);}
-    .w-top-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-    .w-method-logo{width:42px;height:42px;border-radius:12px;background:#f5f5f5;border:1.5px solid #e8e8e8;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-    .w-method-logo img{width:30px;height:30px;object-fit:contain;}
-    .w-method-info{flex:1;}
-    .w-method-name{font-size:14px;font-weight:700;color:var(--text-primary);}
-    .w-coins-amount{font-size:15px;font-weight:800;color:var(--primary);}
-    .w-status-badge{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0;}
-    .w-status-badge.processing{background:#fff3e0;color:#e65100;border:1px solid #ffcc02;}
-    .w-status-badge.completed{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
-    .w-status-badge.rejected{background:#ffebee;color:#c62828;border:1px solid #ffcdd2;}
-    .w-details{background:#f8faf8;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
-    .w-detail-row{display:flex;justify-content:space-between;align-items:center;}
-    .w-detail-label{font-size:11px;color:var(--text-secondary);font-weight:500;}
-    .w-detail-val{font-size:11px;font-weight:700;color:var(--text-primary);font-family:monospace;}
-    .w-reject-reason{margin-top:8px;padding:8px 10px;background:#ffebee;border-radius:8px;font-size:11px;color:#c62828;border-left:3px solid #f44336;}
-    /* WITHDRAW MODAL */
-    .w-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;display:flex;align-items:flex-end;justify-content:center;}
-    .w-modal-bg.hidden{display:none;}
-    .w-modal{background:#fff;border-radius:24px 24px 0 0;padding:26px 22px;width:100%;max-width:480px;border:1px solid var(--border);border-bottom:none;max-height:88vh;overflow-y:auto;}
-    .w-modal-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-    .w-modal-logo{width:46px;height:46px;border-radius:14px;background:#f5f5f5;border:1.5px solid #e8e8e8;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-    .w-modal-logo img{width:32px;height:32px;object-fit:contain;}
-    .w-modal-title{font-size:18px;font-weight:800;color:var(--primary);}
-    .w-modal-sub{font-size:12px;color:var(--text-secondary);}
-    .w-balance-box{background:linear-gradient(135deg,#f0f9f0,#e8f5e9);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;border:1px solid #c8e6c9;}
-    .w-bal-lbl{font-size:12px;color:var(--text-secondary);}
-    .w-bal-val{font-size:22px;font-weight:800;color:var(--primary);}
-    .w-inp-lbl{display:block;font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
-    .w-inp{width:100%;height:50px;padding:0 16px;border:2px solid var(--border);border-radius:12px;font-size:15px;background:#f8faf8;outline:none;margin-bottom:14px;transition:border-color 0.3s;color:var(--text-primary);}
-    .w-inp:focus{border-color:var(--primary);background:#fff;}
-    .w-error{color:#c62828;font-size:12px;margin-bottom:10px;min-height:16px;padding:0 2px;}
-    .w-submit{width:100%;height:52px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;transition:all 0.3s;}
-    .w-submit:disabled{opacity:0.55;cursor:not-allowed;}
-    .w-cancel{width:100%;height:46px;background:transparent;color:var(--text-secondary);border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;}
-    /* MISC */
-    .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--text-primary);color:#fff;padding:10px 20px;border-radius:25px;font-size:13px;font-weight:500;z-index:10000;box-shadow:var(--shadow-lg);display:none;}
-    .toast.success{background:var(--success);}
-    .toast.error{background:var(--error);}
-    .notif-cont{position:fixed;top:16px;right:14px;z-index:10001;display:flex;flex-direction:column;gap:8px;max-width:290px;}
-    .notif{padding:12px 14px;border-radius:12px;color:#fff;font-size:12px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:slideIn 0.3s ease-out;}
-    .notif.success{background:var(--success);}
-    .notif.error{background:var(--error);}
-    .notif.info{background:var(--primary);}
-    @keyframes slideIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-    @keyframes coinFlip{0%{transform:rotateY(0);}50%{transform:rotateY(180deg) scale(1.1);}100%{transform:rotateY(360deg);}}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
-    .pulse{animation:pulse 2s infinite;}
-    .coin-flip{animation:coinFlip 0.6s ease;}
-    .avatar-circle{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:800;border:2px solid rgba(200,169,81,0.4);}
-    .pk-banner{background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--radius);padding:18px;color:#fff;margin-bottom:14px;border:1px solid rgba(200,169,81,0.3);}
-    .pk-banner h3{color:var(--accent-light);margin-bottom:12px;font-size:14px;}
-    .pk-feat{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-    .pk-feat:last-child{margin-bottom:0;}
-    .pk-feat-icon{font-size:20px;}
-    .pk-feat-text{font-size:12px;opacity:0.85;}
-    .pk-feat-title{font-weight:600;font-size:13px;}
-    @media(max-width:360px){.stats-grid{gap:8px;}.stat-value{font-size:20px;}.notif-cont{left:10px;right:10px;max-width:none;}}
-    @media(prefers-color-scheme:dark){:root{--background:#0f1f0f;--surface:#1a2e1a;--text-primary:#e8f5e9;--text-secondary:#81c784;--border:#2e4d2e;}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecurePay · Payment Gateway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #0b0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2235;
+  --card:      #141c2e;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --green:     #00e676;
+  --green-d:   #00c853;
+  --green-glow:rgba(0,230,118,0.18);
+  --red:       #ff4d6d;
+  --amber:     #ffb300;
+  --amber-d:   #e65100;
+  --text:      #e8edf5;
+  --muted:     #6b7fa3;
+  --ep-green:  #4CAF50;
+  --ep-green2: #2e7d32;
+  --radius:    16px;
+  --radius-sm: 10px;
+  --shadow:    0 24px 60px rgba(0,0,0,0.55);
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 40px;
+  position: relative;
+  overflow-x: hidden; max-width: 100vw;
+}
+
+/* ── background mesh ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(0,230,118,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,180,255,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 70% at 50% 50%, rgba(14,22,42,0.9) 0%, transparent 100%);
+  pointer-events:none;
+}
+
+/* ── animated grid lines ── */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+}
+
+/* ═══════════════════════════════════════════════
+   WRAPPER
+═══════════════════════════════════════════════ */
+.wrapper {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 480px;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER / BRAND
+═══════════════════════════════════════════════ */
+.brand {
+  text-align: center;
+  margin-bottom: 24px;
+  animation: fadeDown 0.5s ease both;
+}
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--green), #00b8d9);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
+.brand-name {
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #fff 0%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brand-sub {
+  font-size: 12px; color: var(--muted); letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════
+   TIMER BAR
+═══════════════════════════════════════════════ */
+.timer-bar {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: fadeDown 0.5s 0.1s ease both;
+}
+.timer-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+.timer-display {
+  display: flex; align-items: center; gap: 8px;
+}
+.timer-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.timer-count {
+  font-family: var(--mono);
+  font-size: 22px; font-weight: 600;
+  color: var(--green);
+  letter-spacing: 2px;
+  transition: color 0.4s;
+  min-width: 68px; text-align: right;
+}
+.timer-count.warn   { color: var(--amber); }
+.timer-count.urgent { color: var(--red);   }
+
+/* progress track */
+.timer-track {
+  height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.07);
+  margin-top: 10px; overflow: hidden;
+}
+.timer-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--green), #00b8d9);
+  transition: width 1s linear, background 0.4s;
+  width: 100%;
+}
+.timer-fill.warn   { background: linear-gradient(90deg, var(--amber-d), var(--amber)); }
+.timer-fill.urgent { background: linear-gradient(90deg, #c62828, var(--red)); }
+
+/* ═══════════════════════════════════════════════
+   SESSION ID BADGE
+═══════════════════════════════════════════════ */
+.session-badge {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  animation: fadeDown 0.5s 0.15s ease both;
+}
+.session-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px;
+}
+.session-id {
+  font-family: var(--mono);
+  font-size: 12px; font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.copy-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 14px; padding: 2px 4px;
+  border-radius: 4px; transition: color 0.2s, background 0.2s;
+}
+.copy-btn:hover { color: var(--green); background: var(--green-glow); }
+
+/* ═══════════════════════════════════════════════
+   MAIN CARD
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.55s 0.2s ease both;
+}
+
+/* ── payment info section ── */
+.pay-info {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.pay-info::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(0,230,118,0.04) 0%, transparent 60%);
+  pointer-events:none;
+}
+.pay-to-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 14px;
+}
+.ep-badge {
+  display: flex; align-items: center; gap: 14px;
+}
+.ep-logo {
+  width: 72px; height: 72px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.ep-logo img {
+  width: 72px; height: 72px;
+  object-fit: contain;
+  display: block;
+}
+.ep-info {}
+.ep-name {
+  font-size: 17px; font-weight: 800;
+  color: #fff; letter-spacing: -0.3px;
+}
+.ep-tag {
+  font-size: 11px; font-weight: 600;
+  color: var(--ep-green);
+  background: rgba(76,175,80,0.15);
+  padding: 2px 8px; border-radius: 20px;
+  display: inline-block; margin-top: 3px;
+}
+/* payment detail rows */
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-top: 18px;
+}
+.detail-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.detail-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.7px; margin-bottom: 5px;
+}
+.detail-value {
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+}
+.detail-value.mono { font-family: var(--mono); font-size: 13px; letter-spacing: 0.5px; }
+.detail-value.green { color: var(--green); }
+
+/* amount display */
+.amount-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px;
+  background: var(--green-glow);
+  border: 1px solid rgba(0,230,118,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+.amount-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.amount-value { font-size: 20px; font-weight: 800; color: var(--green); font-family: var(--mono); }
+
+/* ── form section ── */
+.pay-form { padding: 22px 24px; }
+.form-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 16px;
+}
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 12px; font-weight: 600;
+  color: var(--muted); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.field input {
+  width: 100%; background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 14px;
+  color: var(--text); font-family: var(--font);
+  font-size: 14px; font-weight: 500;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input::placeholder { color: var(--muted); font-weight: 400; }
+.field input:focus {
+  border-color: rgba(0,230,118,0.5);
+  box-shadow: 0 0 0 3px rgba(0,230,118,0.08);
+}
+.field input.error {
+  border-color: rgba(255,77,109,0.6);
+  box-shadow: 0 0 0 3px rgba(255,77,109,0.08);
+}
+.field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; padding-left: 2px; }
+.field-err  { font-size: 11px; color: var(--red);   margin-top: 4px; padding-left: 2px; display:none; }
+
+/* confirm button */
+.btn-confirm {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-d) 100%);
+  border: none; border-radius: 12px;
+  color: #012008; font-family: var(--font);
+  font-size: 15px; font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 8px 28px rgba(0,230,118,0.3);
+  margin-top: 6px;
+}
+.btn-confirm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0,230,118,0.4);
+}
+.btn-confirm:active:not(:disabled) { transform: translateY(0); }
+.btn-confirm:disabled {
+  background: rgba(255,255,255,0.08);
+  color: var(--muted);
+  box-shadow: none; cursor: not-allowed;
+}
+/* shimmer on button */
+.btn-confirm::after {
+  content:'';
+  position:absolute; top:0; left:-120%;
+  width:80%; height:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer 2.5s 1s infinite;
+}
+.btn-confirm:disabled::after { display:none; }
+
+/* loading spinner inside button */
+.btn-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #012008;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 8px; vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════
+   EXPIRED STATE
+═══════════════════════════════════════════════ */
+.expired-overlay {
+  display: none;
+  padding: 36px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.expired-overlay.show { display: block; }
+.expired-icon {
+  font-size: 48px; margin-bottom: 14px;
+  animation: shake 0.5s ease;
+}
+.expired-title {
+  font-size: 20px; font-weight: 800;
+  color: var(--red); margin-bottom: 8px;
+}
+.expired-msg {
+  font-size: 14px; color: var(--muted); line-height: 1.6;
+  margin-bottom: 20px;
+}
+.btn-refresh {
+  display: inline-block; padding: 11px 28px;
+  background: rgba(255,77,109,0.12);
+  border: 1px solid rgba(255,77,109,0.3);
+  border-radius: 10px;
+  color: var(--red); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.2s;
+  font-family: var(--font);
+}
+.btn-refresh:hover { background: rgba(255,77,109,0.2); }
+
+/* ═══════════════════════════════════════════════
+   SUCCESS POPUP
+═══════════════════════════════════════════════ */
+.popup-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.popup-backdrop.show { opacity: 1; pointer-events: all; }
+.popup {
+  background: var(--card);
+  border: 1px solid rgba(0,230,118,0.25);
+  border-radius: 20px;
+  padding: 36px 28px;
+  max-width: 380px; width: 100%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(0,230,118,0.15);
+  transform: scale(0.85) translateY(20px);
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.popup-backdrop.show .popup {
+  transform: scale(1) translateY(0);
+}
+/* animated checkmark */
+.check-wrap {
+  width: 72px; height: 72px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.check-circle {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--green-glow);
+  border: 2px solid var(--green);
+  display: grid; place-items: center;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.check-circle svg { stroke: var(--green); }
+.popup-title {
+  font-size: 22px; font-weight: 800;
+  color: #fff; margin-bottom: 10px; letter-spacing: -0.4px;
+}
+.popup-msg {
+  font-size: 14px; color: var(--muted);
+  line-height: 1.65; margin-bottom: 24px;
+}
+.popup-ref {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text); margin-bottom: 22px;
+  word-break: break-all;
+}
+.popup-ref span { color: var(--green); font-weight: 600; }
+.btn-close-popup {
+  width: 100%; padding: 13px;
+  background: var(--green);
+  border: none; border-radius: 10px;
+  color: #012008; font-size: 14px; font-weight: 800;
+  cursor: pointer; font-family: var(--font);
+  transition: opacity 0.2s;
+}
+.btn-close-popup:hover { opacity: 0.88; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER TRUST BADGES
+═══════════════════════════════════════════════ */
+.trust-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; margin-top: 18px;
+  animation: fadeUp 0.5s 0.4s ease both;
+  flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--muted); font-weight: 500;
+}
+.trust-item span { font-size: 14px; }
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes fadeDown {
+  from { opacity:0; transform: translateY(-14px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(18px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.5; transform:scale(0.7); }
+}
+@keyframes shimmer {
+  0%   { left:-120%; }
+  100% { left:200%; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes popIn {
+  from { transform:scale(0); opacity:0; }
+  to   { transform:scale(1); opacity:1; }
+}
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  20%,60%  { transform:translateX(-6px); }
+  40%,80%  { transform:translateX(6px); }
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1e2a3a; border: 1px solid var(--border2);
+  border-radius: 10px; padding: 11px 20px;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  z-index: 200; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════════════════
+   MOBILE
+═══════════════════════════════════════════════ */
+@media(max-width:420px){
+  body { padding: 12px 12px 36px; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .pay-info, .pay-form { padding: 18px 16px; }
+  .timer-count { font-size: 19px; }
+  .amount-value { font-size: 18px; }
+}
+
+/* ── DYNAMIC AMOUNT BLOCK ─────────────────────── */
+.amount-block {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 16px;
+  background: linear-gradient(135deg, rgba(0,230,118,0.08) 0%, rgba(0,184,212,0.06) 100%);
+  border: 1.5px solid rgba(0,230,118,0.28);
+  border-radius: 12px; padding: 14px 18px;
+  position: relative; overflow: hidden;
+}
+.amount-block::before {
+  content:'';
+  position:absolute; top:-30px; right:-20px;
+  width:90px; height:90px;
+  background: radial-gradient(circle, rgba(0,230,118,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.amount-block-left { flex:1; }
+.amount-block-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 3px;
+}
+.amount-block-note {
+  font-size: 11px; color: var(--muted); font-weight: 500;
+}
+.amount-block-value {
+  font-family: var(--mono);
+  font-size: 26px; font-weight: 800;
+  color: var(--green);
+  letter-spacing: -0.5px; white-space: nowrap;
+  text-shadow: 0 0 24px rgba(0,230,118,0.35);
+}
+/* pulse animation once amount loads */
+@keyframes amountPop {
+  0%   { transform: scale(0.85); opacity:0; }
+  70%  { transform: scale(1.06); }
+  100% { transform: scale(1);    opacity:1; }
+}
+.amount-block-value.loaded { animation: amountPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+.amount-missing {
+  margin-top: 14px; padding: 12px 14px;
+  background: rgba(255,77,109,0.1);
+  border: 1px solid rgba(255,77,109,0.3);
+  border-radius: 10px;
+  font-size: 12px; font-weight: 600; color: var(--red);
+  line-height: 1.5;
+}
+
+/* confirm button — show amount inside it */
+.btn-confirm .btn-amount { opacity:0.75; font-weight:700; }
+
+</style>
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="auth-container" class="auth-container">
-  <div class="pk-flag-bar"><span>🇵🇰</span><span class="pk-flag-text">Pakistan's #1 Rewards App</span></div>
-  <div class="app-logo">
-    <div class="logo-icon">MR</div>
-    <h1 class="app-title">Mreward PRO</h1>
-    <p class="app-subtitle">Ghar baithe kamao – Real Cash Rewards</p>
-    <span class="pk-badge">🌙 Pakistani Edition</span>
-  </div>
-  <div class="login-card">
-    <h2 class="form-title">Khush Aamdeed! 👋</h2>
-    <p class="form-subtitle">Sign in karein aur kamana shuru karein</p>
-    <label class="input-label">📧 Email Address</label>
-    <input type="email" id="email-input" class="input-field" placeholder="apka@email.com">
-    <label class="input-label">🔒 Password</label>
-    <input type="password" id="password-input" class="input-field" placeholder="Password darj karein">
-    <!-- ✅ REFERRAL CODE FIELD (signup ke liye) -->
-    <div class="ref-input-wrap" id="ref-code-wrap" style="display:none;">
-      <span class="ref-optional-lbl">🎁 Kisi ne invite kiya? (Optional)</span>
-      <label class="input-label">🤝 Referral Code</label>
-      <input type="text" id="ref-code-input" class="input-field" placeholder="e.g. ABC123" maxlength="8" style="text-transform:uppercase;letter-spacing:2px;">
+<!-- ═══════ SUCCESS POPUP ═══════ -->
+<div class="popup-backdrop" id="successPopup">
+  <div class="popup">
+    <div class="check-wrap">
+      <div class="check-circle">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6,17 13,24 26,10"/>
+        </svg>
+      </div>
     </div>
-    <button id="signin-btn" class="btn-primary">🔐 Sign In</button>
-    <button id="signup-btn" class="btn-secondary">✨ Naya Account Banao</button>
-    <div id="auth-message" class="form-message"></div>
+    <div class="popup-title">Payment Submitted!</div>
+    <div class="popup-msg">Your payment request has been submitted and is currently processing. Please wait for confirmation.</div>
+    <div class="popup-ref">Session ID: <span id="popupSessionId">—</span><br/>Amount: <span id="popupAmount" style="color:var(--green);font-weight:800">—</span></div>
+    <button class="btn-close-popup" onclick="closePopup()">Done ✓</button>
   </div>
 </div>
 
-<!-- MAIN APP -->
-<div id="main-app" class="main-app">
-  <header class="app-header">
-    <div class="header-left">
-      <div class="header-logo">MR</div>
-      <div class="header-title">Mreward PRO 🇵🇰</div>
-    </div>
-    <div class="header-coins">💰 <span id="header-coins">0</span></div>
-  </header>
+<!-- ═══════ TOAST ═══════ -->
+<div class="toast" id="toast"></div>
 
-  <div class="content-container">
-    <!-- HOME -->
-    <div id="home-content" class="tab-content">
-      <div class="stats-grid">
-        <div class="stat-card" onclick="animateCoin()"><div class="stat-value" id="coin-balance">0</div><div class="stat-label">💰 Total Coins</div></div>
-        <div class="stat-card"><div class="stat-value" id="daily-status">🎁</div><div class="stat-label">Roz Ka Inaam</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="pulse">🎁</span> Roz Ka Inaam</div>
-        <p class="small">Har 24 ghante mein 50 coins claim karo!</p>
-        <button id="claim-daily" class="btn-enhanced"><span id="daily-text">🎁 Daily Reward Claim Karo</span></button>
-        <div id="daily-msg" class="small" style="margin-top:10px;text-align:center;"></div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="justify-content:space-between;">
-          <span><span class="pulse">🎰</span> Spin &amp; Jeetoo!</span>
-          <span id="spin-status" class="small" style="color:var(--primary);font-weight:700;">Cost: 5 coins</span>
-        </div>
-        <div class="wheel-wrapper">
-          <div id="wheel-of-fortune">
-            <div class="wl" style="top:12px;left:50%;transform:translateX(-50%)">10</div>
-            <div class="wl" style="top:34px;right:34px">25</div>
-            <div class="wl" style="top:50%;right:12px;transform:translateY(-50%)">5</div>
-            <div class="wl" style="bottom:34px;right:34px">20</div>
-            <div class="wl" style="bottom:12px;left:50%;transform:translateX(-50%)">0</div>
-            <div class="wl" style="bottom:34px;left:34px">50</div>
-            <div class="wl" style="top:50%;left:12px;transform:translateY(-50%)">15</div>
-            <div class="wl" style="top:34px;left:34px">0</div>
-            <div style="background:rgba(0,0,0,0.65);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:2;">🎰</div>
-          </div>
-          <div style="position:relative;display:flex;justify-content:center;margin:10px 0 14px;">
-            <div class="wheel-pointer"><div id="spinner-result">?</div></div>
-          </div>
-          <p class="small" style="margin-bottom:12px;">🎯 50 coins tak jeeto! Sirf 5 coins per spin</p>
-          <button id="spin-btn" class="btn gold" style="padding:12px 30px;font-size:14px;font-weight:700;">🎰 SPIN KARO (5 coins)</button>
-          <div id="spin-message" style="margin-top:10px;font-size:12px;"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Meri Kamaai</div>
-        <div class="stats-grid" style="margin-bottom:0;">
-          <div class="stat-card" style="background:linear-gradient(135deg,#2e7d32,#388e3c);"><div class="stat-value" id="total-tasks">0</div><div class="stat-label">✅ Tasks Done</div></div>
-          <div class="stat-card" style="background:linear-gradient(135deg,#C8A951,#F0D060);"><div class="stat-value" style="color:#1a2e1a;" id="total-earned">0</div><div class="stat-label" style="color:#1a2e1a;">🏆 Total Earned</div></div>
-        </div>
-      </div>
-      <div class="pk-banner">
-        <h3>✨ Kyu Choose Karein Mreward PRO?</h3>
-        <div class="pk-feat"><span class="pk-feat-icon">📱</span><div><div class="pk-feat-title">Easypaisa &amp; JazzCash</div><div class="pk-feat-text">Direct apke mobile wallet mein payment</div></div></div>
-        <div class="pk-feat"><span class="pk-feat-icon">🤝</span><div><div class="pk-feat-title">Referral Bonus</div><div class="pk-feat-text">Har dost ke join karne par 100 coins</div></div></div>
-        <div class="pk-feat"><span class="pk-feat-icon">🎯</span><div><div class="pk-feat-title">Asaan Tasks</div><div class="pk-feat-text">Simple tasks karke fauri kamao</div></div></div>
+<!-- ═══════ MAIN WRAPPER ═══════ -->
+<div class="wrapper">
+
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-logo">
+      <div class="brand-icon">🔐</div>
+      <span class="brand-name">SecurePay</span>
+    </div>
+    <div class="brand-sub">Secure · Fast · Trusted</div>
+  </div>
+
+  <!-- Timer bar -->
+  <div class="timer-bar" id="timerBar">
+    <div>
+      <div class="timer-label">Session Expires In</div>
+      <div class="timer-track">
+        <div class="timer-fill" id="timerFill"></div>
       </div>
     </div>
-
-    <!-- TASKS -->
-    <div id="tasks-content" class="tab-content hidden">
-      <div class="card">
-        <div class="card-title">🎯 Available Tasks</div>
-        <p class="small" style="margin-bottom:14px;">Tasks complete karo aur coins kamaao!</p>
-        <div id="tasks-list" class="list"><div class="small">Tasks load ho rahi hain...</div></div>
-      </div>
-    </div>
-
-    <!-- REWARDS -->
-    <div id="rewards-content" class="tab-content hidden">
-      <!-- REFERRAL CARD -->
-      <div class="card">
-        <div class="card-title">🤝 Dost Ko Invite Karo</div>
-        <p class="small" style="margin-bottom:12px;">Referral code share karo, 100 coins per friend!</p>
-        <div class="ref-box">
-          <div class="small" style="margin-bottom:6px;">Tera Referral Code:</div>
-          <div class="ref-code-text" id="ref-code">LOADING</div>
-        </div>
-        <div class="ref-stats">
-          <div class="ref-stat-box">
-            <div class="ref-stat-val" id="ref-count">0</div>
-            <div class="ref-stat-lbl">👥 Referrals</div>
-          </div>
-          <div class="ref-stat-box">
-            <div class="ref-stat-val" id="ref-earned">0</div>
-            <div class="ref-stat-lbl">💰 Earned</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:12px;margin-bottom:10px;">
-          <button id="copy-ref" class="btn ghost" style="flex:1;">📋 Copy Link</button>
-          <button id="share-wa" class="btn" style="flex:1;background:#25D366;">📱 WhatsApp</button>
-        </div>
-        <button id="share-tg" class="btn ghost" style="width:100%;">✈️ Telegram Share</button>
-        <div style="background:#f0f9f0;border-radius:10px;padding:10px;margin-top:12px;text-align:center;">
-          <div class="small">💡 Har dost ke liye <strong style="color:var(--primary);">100 coins</strong> milenge!</div>
-        </div>
-      </div>
-
-      <!-- WITHDRAWAL CARD WITH REAL LOGOS -->
-      <div class="card">
-        <div class="card-title">💸 Paise Nikalo</div>
-        <div class="withdraw-grid">
-          <div class="withdraw-option" onclick="openWithdrawModal('Easypaisa',2000)">
-            <div class="pay-logo-wrap">
-              <img src="data:image/png;base64,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" class="pay-logo" alt="Easypaisa">
-            </div>
-            <div class="withdraw-name">Easypaisa</div>
-            <div class="withdraw-min">Min: 2000 coins</div>
-            <button class="btn withdraw-btn">Withdraw</button>
-          </div>
-          <div class="withdraw-option" onclick="openWithdrawModal('JazzCash',2000)">
-            <div class="pay-logo-wrap">
-              <img src="data:image/png;base64,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" class="pay-logo" alt="JazzCash">
-            </div>
-            <div class="withdraw-name">JazzCash</div>
-            <div class="withdraw-min">Min: 2000 coins</div>
-            <button class="btn withdraw-btn">Withdraw</button>
-          </div>
-          <div class="withdraw-option" onclick="openWithdrawModal('Bank',5000)">
-            <div class="pay-logo-wrap bank-logo-wrap">
-              <span style="font-size:36px;">🏦</span>
-            </div>
-            <div class="withdraw-name">Bank Transfer</div>
-            <div class="withdraw-min">Min: 5000 coins</div>
-            <button class="btn withdraw-btn">Withdraw</button>
-          </div>
-          <div class="withdraw-option" onclick="openWithdrawModal('SadaPay',3000)">
-            <div class="pay-logo-wrap">
-              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGYAAABmCAMAAAAOARRQAAABP2lDQ1BpY2MAAHicfZC/SwJxGMY/11WWWA05NBQcJU0FUUtTgYZOEfgj1Kbz/FGgdt33QprLoaloiEZrCaLZxhz6A4KgIQqirdWghpKLrw5aUM/yfnh4Xt6XB5TnvFEQ3RoUirYVDvm1eCKpuV5Q8dLPIGO6IczlSDAKIPSSMGwrzw+936PIeTe9rhfTO6/Xq8kFpbo7UY4FP1Yu+F/udEYYwBfgM0zLBkUDxku2KXkJ8BrrehqUODBlxRNJUPakn2vxieRUiy8lW9FwAJQaoOU6ONXBhfy2vCslv/dkirEI0AeMIggTwv9HpreZCRBgBmRfv3sQ2bnZ1pZnEXqeHOdtElyH0DhynM9Tx2mcgfoIta32/mYF5uugHrS91DFc7cPIQ9vzVWCoDNUbU7f0pqUCXdkNqJ/DQAKGb8G99g3j4l+xfPB+eQAAAEhQTFRFTGlx////0+b/Fnj+////////////////////////////CHH++vz/EXb+6vP/w93/Tpj/IX/+NYr+2+v/Zaf/nsf/da//AGb+MBvFJQAAAAp0Uk5TAK3h/4DGEOqTUXGOoe0AAAAJcEhZcwAACxMAAAsTAQCanBgAAAC0ZVhJZklJKgAIAAAABgASAQMAAQAAAAEAAAAaAQUAAQAAAFYAAAAbAQUAAQAAAF4AAAAoAQMAAQAAAAIAAAATAgMAAQAAAAEAAABphwQAAQAAAGYAAAAAAAAASAAAAAEAAABIAAAAAQAAAAYAAJAHAAQAAAAwMjEwAZEHAAQAAAABAgMAAKAHAAQAAAAwMTAwAaADAAEAAAD//wAAAqAEAAEAAABmAAAAA6AEAAEAAABmAAAAAAAAAM/XIvYAAAIpSURBVHja7ZrbkoMgDIbd0RYF4gEPff83XQ5qRWk7IzGzneW/4ka+SQJEQrJsVVXemORIkuxWVtlB94JxdLHi7lOqCyAW5FlU8stUPik//EL9ENiysafiF8vG586uxjCz3gp+uQqNYddjGEFkXHRKCkyZ3SgwN4rQmOBICozMOIkS5pswEkOfMP2kQEQqV1P/FiMHyFEkBvkaUyskSp6Dql9hECl7zhYzIFI0ZwhjelSK5vRBzJQjawphpMLGKBnCADYGghiBjRH/AQPICmJ4ja6UPRMmtKAbdAX3zUMg65HOtIRJmIQ5ibHJdzfKj+k5FtMZPUfb4VZxGDHaq5j+pYfWjhqRQ9ccL2uTiMBAZ3++605jRvuJng7aY3aZbzAnMfMVbDTjfpnOAX01EOM04WZsrc/W6frjJdn57CQGlJ2x1ybMwGEF+hgVY41w169RL2AXJNmtwJDPzmFgjsIgnkHSO+ToMz5FYRafiY3PxBufncS4lTvqTX4Iku+zPOoUcFvF+KyVfpB8rRfyMxjo6tmEbZACPquViME4n9njZR+ksM/OYZrFhAUIy6rYrTMRlQhaK3P4KjsyB03XHtVBFMb9sJo5YDfyBSlJfy2GqGZDU4EiqqdRVQeJap1UlVuiOrRLWtdX1ZHeCODTGwHZi0eqQP0hDNHzKtFjMdHTN9FDPlFbAlGTBVXLCFEDDFE7D1VzElWrFVXjGFUbHFVT39KiiIjwWhR/AY7nRItvjuiTAAAAAElFTkSuQmCC" class="pay-logo" alt="SadaPay">
-            </div>
-            <div class="withdraw-name">SadaPay</div>
-            <div class="withdraw-min">Min: 3000 coins</div>
-            <button class="btn withdraw-btn">Withdraw</button>
-          </div>
-        </div>
-
-        <!-- WITHDRAWAL HISTORY - PERMANENT & PROFESSIONAL -->
-        <div style="margin-top:20px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div class="card-title" style="margin:0;">📋 Withdrawal History</div>
-            <span id="w-count-badge" style="background:#e8f5e9;color:#2e7d32;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #c8e6c9;">0</span>
-          </div>
-          <div id="withdraw-history" class="w-history-wrap">
-            <div style="text-align:center;padding:28px 16px;color:var(--text-secondary);">
-              <div style="font-size:36px;margin-bottom:10px;">📭</div>
-              <div style="font-size:13px;">Abhi tak koi withdrawal nahi.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROFILE -->
-    <div id="profile-content" class="tab-content hidden">
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div class="avatar-circle" id="avatar">U</div>
-          <div style="flex:1;">
-            <h3 id="profile-name" style="margin:0;font-size:16px;">User</h3>
-            <div id="profile-email" class="small" style="margin:3px 0;">email@example.com</div>
-            <div class="small">🇵🇰 Pakistan</div>
-            <button id="logout" class="btn ghost" style="margin-top:10px;font-size:12px;padding:8px 14px;">🚪 Logout</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Account Summary</div>
-        <div class="stats-grid">
-          <div style="text-align:center;padding:14px;background:#f5faf5;border-radius:12px;border:1px solid var(--border);">
-            <div style="font-size:22px;font-weight:800;color:var(--primary);" id="profile-coins">0</div>
-            <div class="small">💰 Total Coins</div>
-          </div>
-          <div style="text-align:center;padding:14px;background:#f5faf5;border-radius:12px;border:1px solid var(--border);">
-            <div style="font-size:22px;font-weight:800;color:var(--success);" id="profile-withdrawals">0</div>
-            <div class="small">💸 Withdrawals</div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📈 Recent Activity</div>
-        <div id="recent-activity" class="list"><div class="small">Koi activity nahi abhi tak.</div></div>
-      </div>
+    <div class="timer-display">
+      <div class="timer-dot" id="timerDot"></div>
+      <div class="timer-count" id="timerCount">08:00</div>
     </div>
   </div>
 
-  <nav class="bottom-nav">
-    <div class="nav-item active" data-tab="home"><div class="nav-icon">🏠</div><span>Home</span></div>
-    <div class="nav-item" data-tab="tasks"><div class="nav-icon">🎯</div><span>Tasks</span></div>
-    <div class="nav-item" data-tab="rewards"><div class="nav-icon">💸</div><span>Rewards</span></div>
-    <div class="nav-item" data-tab="profile"><div class="nav-icon">👤</div><span>Profile</span></div>
-  </nav>
-</div>
+  <!-- Session ID -->
+  <div class="session-badge">
+    <div>
+      <div class="session-label">Session / Payment ID</div>
+      <div class="session-id" id="sessionIdDisplay">Generating…</div>
+    </div>
+    <button class="copy-btn" onclick="copySessionId()" title="Copy ID">📋</button>
+  </div>
 
-<!-- WITHDRAW MODAL -->
-<div id="withdraw-modal" class="w-modal-bg hidden">
-  <div class="w-modal">
-    <div class="w-modal-header">
-      <div class="w-modal-logo" id="wm-logo-wrap"></div>
-      <div>
-        <div class="w-modal-title" id="wm-title">Withdrawal</div>
-        <div class="w-modal-sub" id="wm-min-text">Min: – coins</div>
+  <!-- MAIN CARD -->
+  <div class="card">
+
+    <!-- Payment Info -->
+    <div class="pay-info">
+      <div class="pay-to-label">Send Payment To</div>
+      <div class="ep-badge">
+        <div class="ep-logo"><img src="data:image/png;base64,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" alt="EasyPaisa"/></div>
+        <div class="ep-info">
+          <div class="ep-name">EasyPaisa</div>
+          <div class="ep-tag">Mobile Wallet</div>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Account Number</div>
+          <div class="detail-value mono green">03170305397</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Account Name</div>
+          <div class="detail-value">Qadir Baksh Laghari</div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC AMOUNT BLOCK -->
+      <div class="amount-block" id="amountBlock">
+        <div class="amount-block-left">
+          <div class="amount-block-label">Amount to Pay</div>
+          <div class="amount-block-note">Send this exact amount via EasyPaisa</div>
+        </div>
+        <div class="amount-block-value" id="amountDisplay">Rs. —</div>
+      </div>
+
+      <!-- No-amount warning (shown when ?amount= is missing/invalid) -->
+      <div class="amount-missing" id="amountMissing" style="display:none">
+        ⚠️ No amount specified. Please use the correct payment link from the merchant.
       </div>
     </div>
-    <div class="w-balance-box">
-      <div><div class="w-bal-lbl">Aapke Coins</div><div class="w-bal-val" id="wm-bal">0</div></div>
-      <div style="font-size:28px;">💰</div>
-    </div>
-    <label class="w-inp-lbl">Coins Amount</label>
-    <input type="number" id="wm-amount" class="w-inp" placeholder="Kitne coins withdraw karein?">
-    <label class="w-inp-lbl" id="wm-acc-lbl">Account Number</label>
-    <input type="text" id="wm-account" class="w-inp" placeholder="Account number darj karein...">
-    <div class="w-error" id="wm-error"></div>
-    <button class="w-submit" id="wm-submit-btn" onclick="submitWithdrawal()">💸 Request Submit Karein</button>
-    <button class="w-cancel" onclick="closeWithdrawModal()">← Wapas Jao</button>
-  </div>
-</div>
 
-<div id="toast" class="toast"></div>
-<div id="notif-cont" class="notif-cont"></div>
+    <!-- Form -->
+    <div class="pay-form" id="payForm">
+      <div class="form-title">Your Payment Details</div>
+
+      <div class="field">
+        <label for="txnId">EasyPaisa Transaction ID</label>
+        <input type="text" id="txnId" placeholder="e.g. EP1234567890" autocomplete="off"/>
+        <div class="field-hint">Transaction ID received from EasyPaisa after sending</div>
+        <div class="field-err" id="errTxn">Please enter a valid Transaction ID</div>
+      </div>
+
+      <div class="field">
+        <label for="senderNumber">Your Wallet Number</label>
+        <input type="tel" id="senderNumber" placeholder="03XX-XXXXXXX" maxlength="13"/>
+        <div class="field-hint">The number you sent payment from</div>
+        <div class="field-err" id="errPhone">Enter a valid Pakistani number (03XX…)</div>
+      </div>
+
+      <div class="field">
+        <label for="senderName">Your Account Name</label>
+        <input type="text" id="senderName" placeholder="Full name as in EasyPaisa"/>
+        <div class="field-err" id="errName">Please enter your account name</div>
+      </div>
+
+      <button class="btn-confirm" id="confirmBtn" onclick="confirmPayment()">
+        ✅ &nbsp;Confirm Payment
+      </button>
+    </div>
+
+    <!-- Expired overlay -->
+    <div class="expired-overlay" id="expiredOverlay">
+      <div class="expired-icon">⏰</div>
+      <div class="expired-title">Session Expired</div>
+      <div class="expired-msg">Your payment session has timed out after 8 minutes for security reasons. Please start a new session to complete your payment.</div>
+      <button class="btn-refresh" onclick="location.reload()">🔄 &nbsp;Start New Session</button>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- Trust badges -->
+  <div class="trust-row">
+    <div class="trust-item"><span>🔒</span> SSL Secured</div>
+    <div class="trust-item"><span>⚡</span> Instant Verify</div>
+    <div class="trust-item"><span>🛡️</span> Fraud Protected</div>
+  </div>
+
+</div><!-- /wrapper -->
 
 <script>
-  let auth, db, currentUserData = {}, isSpinning = false;
-  let openedTasks = new Set(), completedTasks = new Set(), taskReturnTimers = new Map();
-  let claimInProgress = new Set();
-  let _wMethod = '', _wMin = 0;
-  const SPIN_COST = 5, REWARDS = [10, 25, 5, 20, 0, 50, 15, 0];
+/* ═══════════════════════════════════════════════
+   CONFIGURATION
+═══════════════════════════════════════════════ */
+const TIMER_SECONDS = 8 * 60; // 8 minutes
 
-  // ===== PAYMENT LOGOS (base64 embedded) =====
-  const PAY_LOGOS = {
-    Easypaisa: 'data:image/png;base64,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',
-    JazzCash: 'data:image/png;base64,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',
-    SadaPay: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGYAAABmCAMAAAAOARRQAAABP2lDQ1BpY2MAAHicfZC/SwJxGMY/11WWWA05NBQcJU0FUUtTgYZOEfgj1Kbz/FGgdt33QprLoaloiEZrCaLZxhz6A4KgIQqirdWghpKLrw5aUM/yfnh4Xt6XB5TnvFEQ3RoUirYVDvm1eCKpuV5Q8dLPIGO6IczlSDAKIPSSMGwrzw+936PIeTe9rhfTO6/Xq8kFpbo7UY4FP1Yu+F/udEYYwBfgM0zLBkUDxku2KXkJ8BrrehqUODBlxRNJUPakn2vxieRUiy8lW9FwAJQaoOU6ONXBhfy2vCslv/dkirEI0AeMIggTwv9HpreZCRBgBmRfv3sQ2bnZ1pZnEXqeHOdtElyH0DhynM9Tx2mcgfoIta32/mYF5uugHrS91DFc7cPIQ9vzVWCoDNUbU7f0pqUCXdkNqJ/DQAKGb8G99g3j4l+xfPB+eQAAAEhQTFRFTGlx////0+b/Fnj+////////////////////////////CHH++vz/EXb+6vP/w93/Tpj/IX/+NYr+2+v/Zaf/nsf/da//AGb+MBvFJQAAAAp0Uk5TAK3h/4DGEOqTUXGOoe0AAAAJcEhZcwAACxMAAAsTAQCanBgAAAC0ZVhJZklJKgAIAAAABgASAQMAAQAAAAEAAAAaAQUAAQAAAFYAAAAbAQUAAQAAAF4AAAAoAQMAAQAAAAIAAAATAgMAAQAAAAEAAABphwQAAQAAAGYAAAAAAAAASAAAAAEAAABIAAAAAQAAAAYAAJAHAAQAAAAwMjEwAZEHAAQAAAABAgMAAKAHAAQAAAAwMTAwAaADAAEAAAD//wAAAqAEAAEAAABmAAAAA6AEAAEAAABmAAAAAAAAAM/XIvYAAAIpSURBVHja7ZrbkoMgDIbd0RYF4gEPff83XQ5qRWk7IzGzneW/4ka+SQJEQrJsVVXemORIkuxWVtlB94JxdLHi7lOqCyAW5FlU8stUPik//EL9ENiysafiF8vG586uxjCz3gp+uQqNYddjGEFkXHRKCkyZ3SgwN4rQmOBICozMOIkS5pswEkOfMP2kQEQqV1P/FiMHyFEkBvkaUyskSp6Dql9hECl7zhYzIFI0ZwhjelSK5vRBzJQjawphpMLGKBnCADYGghiBjRH/AQPICmJ4ja6UPRMmtKAbdAX3zUMg65HOtIRJmIQ5ibHJdzfKj+k5FtMZPUfb4VZxGDHaq5j+pYfWjhqRQ9ccL2uTiMBAZ3++605jRvuJng7aY3aZbzAnMfMVbDTjfpnOAX01EOM04WZsrc/W6frjJdn57CQGlJ2x1ybMwGEF+hgVY41w169RL2AXJNmtwJDPzmFgjsIgnkHSO+ToMz5FYRafiY3PxBufncS4lTvqTX4Iku+zPOoUcFvF+KyVfpB8rRfyMxjo6tmEbZACPquViME4n9njZR+ksM/OYZrFhAUIy6rYrTMRlQhaK3P4KjsyB03XHtVBFMb9sJo5YDfyBSlJfy2GqGZDU4EiqqdRVQeJap1UlVuiOrRLWtdX1ZHeCODTGwHZi0eqQP0hDNHzKtFjMdHTN9FDPlFbAlGTBVXLCFEDDFE7D1VzElWrFVXjGFUbHFVT39KiiIjwWhR/AY7nRItvjuiTAAAAAElFTkSuQmCC',
-    Bank: null
+/* ═══════════════════════════════════════════════
+   URL PARAM — DYNAMIC AMOUNT
+   Usage: paysecure.html?amount=500
+   Also supports: ?amount=500&orderId=ORD123
+═══════════════════════════════════════════════ */
+const _params     = new URLSearchParams(window.location.search);
+const _rawAmount  = _params.get('amount');
+const _orderIdParam = _params.get('orderId') || _params.get('ref') || '';
+
+// Parse and validate amount
+let AMOUNT = 0;
+let AMOUNT_VALID = false;
+
+if (_rawAmount !== null) {
+  const parsed = parseFloat(_rawAmount);
+  if (!isNaN(parsed) && parsed > 0 && parsed <= 1000000) {
+    AMOUNT = parsed;
+    AMOUNT_VALID = true;
+  }
+}
+
+// Format: Rs. 1,000 or Rs. 1,000.50
+function formatAmount(n) {
+  if (n % 1 === 0) return 'Rs. ' + n.toLocaleString('en-PK');
+  return 'Rs. ' + n.toLocaleString('en-PK', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+// Inject amount into UI
+(function initAmount() {
+  const block   = document.getElementById('amountBlock');
+  const display = document.getElementById('amountDisplay');
+  const missing = document.getElementById('amountMissing');
+  const btn     = document.getElementById('confirmBtn');
+
+  if (AMOUNT_VALID) {
+    // Show amount with pop animation
+    display.textContent = formatAmount(AMOUNT);
+    setTimeout(() => display.classList.add('loaded'), 50);
+    block.style.display = 'flex';
+    missing.style.display = 'none';
+
+    // Inject amount into button label
+    btn.innerHTML = `✅&nbsp; Confirm Payment &nbsp;<span class="btn-amount">(${formatAmount(AMOUNT)})</span>`;
+
+    // Update page title
+    document.title = `Pay ${formatAmount(AMOUNT)} · SecurePay`;
+  } else {
+    // No valid amount — show warning, disable submit
+    block.style.display = 'none';
+    missing.style.display = 'block';
+    btn.disabled = true;
+    btn.innerHTML = '⚠️ Invalid Payment Link';
+    btn.style.background = 'rgba(255,77,109,0.15)';
+    btn.style.color = 'var(--red)';
+    btn.style.boxShadow = 'none';
+  }
+})();
+
+
+
+/* ═══════════════════════════════════════════════
+   SESSION ID
+═══════════════════════════════════════════════ */
+// Generate a unique session ID for this tab/session
+function generateSessionId() {
+  const ts  = Date.now().toString(36).toUpperCase();
+  const rnd = Math.random().toString(36).slice(2, 7).toUpperCase();
+  return `TXN-${ts}-${rnd}`;
+}
+
+// Use sessionStorage so it persists across soft refreshes but resets per tab
+let SESSION_ID = sessionStorage.getItem('sp_session_id');
+if (!SESSION_ID) {
+  SESSION_ID = generateSessionId();
+  sessionStorage.setItem('sp_session_id', SESSION_ID);
+}
+document.getElementById('sessionIdDisplay').textContent = SESSION_ID;
+document.getElementById('popupSessionId').textContent   = SESSION_ID;
+
+function copySessionId() {
+  navigator.clipboard.writeText(SESSION_ID).then(() => showToast('📋 Session ID copied!')).catch(() => showToast('Could not copy'));
+}
+
+/* ═══════════════════════════════════════════════
+   DUPLICATE SUBMISSION CHECK
+═══════════════════════════════════════════════ */
+const SUBMITTED_KEY = 'sp_submitted_' + SESSION_ID;
+if (localStorage.getItem(SUBMITTED_KEY)) {
+  // Already submitted in this session — disable form immediately
+  disableForm('already_submitted');
+}
+
+/* ═══════════════════════════════════════════════
+   COUNTDOWN TIMER
+═══════════════════════════════════════════════ */
+const TIMER_START_KEY = 'sp_timer_start_' + SESSION_ID;
+let timerStart = parseInt(sessionStorage.getItem(TIMER_START_KEY) || '0');
+if (!timerStart) {
+  timerStart = Date.now();
+  sessionStorage.setItem(TIMER_START_KEY, timerStart);
+}
+
+const timerCount  = document.getElementById('timerCount');
+const timerFill   = document.getElementById('timerFill');
+const timerDot    = document.getElementById('timerDot');
+
+function updateTimer() {
+  const elapsed  = Math.floor((Date.now() - timerStart) / 1000);
+  const remaining = Math.max(0, TIMER_SECONDS - elapsed);
+
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  timerCount.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  // Progress fill
+  const pct = (remaining / TIMER_SECONDS) * 100;
+  timerFill.style.width = pct + '%';
+
+  // Color states
+  const isWarn   = remaining <= 120 && remaining > 60;
+  const isUrgent = remaining <= 60;
+
+  timerCount.classList.toggle('warn',   isWarn);
+  timerCount.classList.toggle('urgent', isUrgent);
+  timerFill.classList.toggle('warn',    isWarn);
+  timerFill.classList.toggle('urgent',  isUrgent);
+  timerDot.style.background  = isUrgent ? 'var(--red)' : isWarn ? 'var(--amber)' : 'var(--green)';
+  timerDot.style.boxShadow   = isUrgent ? '0 0 8px var(--red)' : isWarn ? '0 0 8px var(--amber)' : '0 0 8px var(--green)';
+
+  if (remaining <= 0) {
+    expireSession();
+    return;
+  }
+  setTimeout(updateTimer, 500);
+}
+
+function expireSession() {
+  timerCount.textContent = '00:00';
+  timerFill.style.width = '0%';
+  timerCount.classList.add('urgent');
+  timerFill.classList.add('urgent');
+  timerDot.style.background = 'var(--red)';
+  timerDot.style.animation  = 'none';
+
+  // Hide form, show expired
+  document.getElementById('payForm').style.display = 'none';
+  document.getElementById('expiredOverlay').classList.add('show');
+}
+
+// Only run timer if not already submitted
+if (!localStorage.getItem(SUBMITTED_KEY)) {
+  updateTimer();
+}
+
+/* ═══════════════════════════════════════════════
+   VALIDATION
+═══════════════════════════════════════════════ */
+function validatePhone(val) {
+  // Pakistani mobile: 03XX-XXXXXXX or 03XXXXXXXXX
+  return /^(03\d{2}[-\s]?\d{7})$/.test(val.trim());
+}
+
+function showErr(fieldId, errId, show) {
+  const inp = document.getElementById(fieldId);
+  const err = document.getElementById(errId);
+  inp.classList.toggle('error', show);
+  err.style.display = show ? 'block' : 'none';
+}
+
+function validateAll() {
+  let ok = true;
+
+  const txn   = document.getElementById('txnId').value.trim();
+  const phone = document.getElementById('senderNumber').value.trim();
+  const name  = document.getElementById('senderName').value.trim();
+
+  if (txn.length < 5) { showErr('txnId', 'errTxn', true); ok = false; }
+  else                 { showErr('txnId', 'errTxn', false); }
+
+  if (!validatePhone(phone)) { showErr('senderNumber', 'errPhone', true); ok = false; }
+  else                        { showErr('senderNumber', 'errPhone', false); }
+
+  if (name.length < 3) { showErr('senderName', 'errName', true); ok = false; }
+  else                  { showErr('senderName', 'errName', false); }
+
+  return ok;
+}
+
+/* ═══════════════════════════════════════════════
+   CONFIRM PAYMENT
+═══════════════════════════════════════════════ */
+function confirmPayment() {
+  // Guard: timer expired?
+  const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+  if (elapsed >= TIMER_SECONDS) { expireSession(); return; }
+
+  // Guard: already submitted?
+  if (localStorage.getItem(SUBMITTED_KEY)) {
+    showToast('⚠️ Already submitted for this session');
+    return;
+  }
+
+  if (!validateAll()) {
+    showToast('⚠️ Please fix the errors above');
+    return;
+  }
+
+  // Show loading state
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span>Processing…';
+
+  // Simulate network delay (replace with Firebase write later)
+  setTimeout(() => {
+    saveToLocalStorage();
+    btn.innerHTML = '✅ &nbsp;Confirm Payment';
+    btn.disabled = false;
+    showSuccessPopup();
+  }, 1800);
+}
+
+/* ═══════════════════════════════════════════════
+   LOCAL STORAGE  (Firebase-ready structure)
+═══════════════════════════════════════════════ */
+function saveToLocalStorage() {
+  const payload = {
+    sessionId:    SESSION_ID,
+    txnId:        document.getElementById('txnId').value.trim(),
+    senderPhone:  document.getElementById('senderNumber').value.trim(),
+    senderName:   document.getElementById('senderName').value.trim(),
+    receiver:     '03170305397',
+    receiverName: 'Qadir Baksh Laghari',
+    method:       'EasyPaisa',
+    submittedAt:  new Date().toISOString(),
+    status:       'pending',
+    amount:       AMOUNT,
+    amountFormatted: formatAmount(AMOUNT),
+    orderId:      _orderIdParam,
+    // Firebase: amount, orderId, userId fields ready
   };
 
-    // ── FIREBASE CONFIG ──
-  const firebaseConfig = {
-  apiKey: "AIzaSyDiw9Lkblug95sFXQIXQB4p6mWePdMvyWE",
-  authDomain: "paw-pro-589ab.firebaseapp.com",
-  databaseURL: "https://paw-pro-589ab-default-rtdb.firebaseio.com",
-  projectId: "paw-pro-589ab",
-  storageBucket: "paw-pro-589ab.firebasestorage.app",
-  messagingSenderId: "931588466367",
-  appId: "1:931588466367:web:71d47d147abbf55c4b480a"
-};
+  // Mark this session as submitted (prevents duplicates)
+  localStorage.setItem(SUBMITTED_KEY, 'true');
 
-  try {
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    loadTaskStates();
+  // Store in requests array (admin panel will read this later)
+  let requests = [];
+  try { requests = JSON.parse(localStorage.getItem('sp_requests') || '[]'); } catch(e) {}
+  requests.unshift(payload); // newest first
+  localStorage.setItem('sp_requests', JSON.stringify(requests));
 
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        document.getElementById('auth-container').classList.add('hidden');
-        document.getElementById('main-app').classList.add('visible');
-        resetAuthBtns();
-        const ref = db.collection('users').doc(user.uid);
-        try {
-          const doc = await ref.get();
-          if (doc.exists) {
-            await ref.update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp(), email: user.email });
-            const d = doc.data();
-            if (d.completedTaskIds && Array.isArray(d.completedTaskIds)) {
-              d.completedTaskIds.forEach(id => completedTasks.add(id));
-              saveTaskStates();
-            }
-          } else {
-            const newCode = genCode();
-            await ref.set({
-              email: user.email, coins: 500, totalTasks: 0, totalEarned: 500,
-              referralCode: newCode, lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              uid: user.uid, country: 'Pakistan', completedTaskIds: [],
-              referralCount: 0, referralEarned: 0
-            });
-            notify('🎉 Khush Aamdeed! 500 welcome coins mile!', 'success');
-          }
-        } catch (e) { console.error('User init error:', e); }
+  // Also store individual by session ID
+  localStorage.setItem('sp_req_' + SESSION_ID, JSON.stringify(payload));
 
-        ref.onSnapshot(doc => {
-          if (doc.exists) {
-            const d = doc.data();
-            if (d.completedTaskIds && Array.isArray(d.completedTaskIds)) {
-              d.completedTaskIds.forEach(id => completedTasks.add(id));
-              saveTaskStates();
-            }
-            updateUI(d, user);
-          }
-        });
+  console.log('[SecurePay] Payment request saved:', payload);
+}
 
-        loadTasks();
-        loadWithdrawHistory(user.uid);
-        loadRecentActivity(user.uid);
-        setupSystemListeners();
-        setupUserStatusListener(user.uid);
-        detectUserReturn();
-      } else {
-        document.getElementById('auth-container').classList.remove('hidden');
-        document.getElementById('main-app').classList.remove('visible');
-        openedTasks = new Set(); completedTasks = new Set(); claimInProgress = new Set();
-      }
-    });
-  } catch (e) {
-    const m = document.getElementById('auth-message');
-    if (m) { m.textContent = '🌐 Internet check karo aur page refresh karo.'; m.className = 'form-message error'; }
+/* ═══════════════════════════════════════════════
+   SUCCESS POPUP
+═══════════════════════════════════════════════ */
+function showSuccessPopup() {
+  document.getElementById('successPopup').classList.add('show');
+  const pa = document.getElementById('popupAmount');
+  if (pa) pa.textContent = AMOUNT_VALID ? formatAmount(AMOUNT) : '—';
+  disableForm('submitted');
+}
+
+function closePopup() {
+  document.getElementById('successPopup').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════════════
+   DISABLE FORM
+═══════════════════════════════════════════════ */
+function disableForm(reason) {
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  if (reason === 'already_submitted') {
+    btn.innerHTML = '✅ Already Submitted';
+    showToast('ℹ️ Payment already submitted for this session');
+  } else {
+    btn.innerHTML = '✅ Submitted';
   }
-
-  function resetAuthBtns() {
-    const s = document.getElementById('signin-btn'), g = document.getElementById('signup-btn');
-    if (s) { s.textContent = '🔐 Sign In'; s.disabled = false; }
-    if (g) { g.textContent = '✨ Naya Account Banao'; g.disabled = false; }
-  }
-
-  function loadTaskStates() {
-    try {
-      const o = localStorage.getItem('openedTasks'), c = localStorage.getItem('completedTasks');
-      if (o) openedTasks = new Set(JSON.parse(o));
-      if (c) completedTasks = new Set(JSON.parse(c));
-    } catch (e) {}
-  }
-
-  function saveTaskStates() {
-    try {
-      localStorage.setItem('openedTasks', JSON.stringify([...openedTasks]));
-      localStorage.setItem('completedTasks', JSON.stringify([...completedTasks]));
-    } catch (e) {}
-  }
-
-  function genCode() {
-    const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    return Array.from({ length: 6 }, () => c[Math.floor(Math.random() * c.length)]).join('');
-  }
-
-  function genTxnId() {
-    const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return 'TXN-' + Array.from({ length: 12 }, () => c[Math.floor(Math.random() * c.length)]).join('');
-  }
-
-  function maskAccount(num) {
-    if (!num) return '–';
-    const s = String(num).trim();
-    if (s.length <= 6) return s;
-    return s.slice(0, 4) + '****' + s.slice(-3);
-  }
-
-  function formatDateTime(ts) {
-    if (!ts) return 'Haal hi mein';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: 'numeric' }) +
-      ' ' + d.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', hour12: true });
-  }
-
-  function set(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
-
-  function animateCoin() {
-    const e = document.getElementById('coin-balance');
-    if (e) { e.classList.add('coin-flip'); setTimeout(() => e.classList.remove('coin-flip'), 700); }
-  }
-
-  function showToast(msg, type = 'success', dur = 3000) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = `toast ${type}`; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', dur);
-  }
-
-  function notify(msg, type = 'success', dur = 4000) {
-    const c = document.getElementById('notif-cont');
-    const n = document.createElement('div');
-    n.className = `notif ${type}`;
-    const i = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-    n.innerHTML = `<span>${i}</span><span>${msg}</span>`;
-    c.appendChild(n);
-    setTimeout(() => n.remove(), dur);
-  }
-
-  function updateUI(data, user) {
-    currentUserData = data;
-    set('coin-balance', (data.coins || 0).toLocaleString());
-    set('header-coins', (data.coins || 0).toLocaleString());
-    set('total-tasks', data.totalTasks || 0);
-    set('total-earned', (data.totalEarned || 0).toLocaleString());
-    set('profile-coins', (data.coins || 0).toLocaleString());
-    set('ref-count', data.referralCount || 0);
-    set('ref-earned', (data.referralEarned || 0).toLocaleString());
-    if (data.referralCode) set('ref-code', data.referralCode);
-    else {
-      const code = genCode();
-      db.collection('users').doc(user.uid).update({ referralCode: code }).catch(() => {});
-      set('ref-code', code);
-    }
-    const name = user.email.split('@')[0];
-    set('profile-name', name); set('profile-email', user.email);
-    const av = document.getElementById('avatar'); if (av) av.textContent = user.email[0].toUpperCase();
-    const today = new Date().toISOString().slice(0, 10);
-    if (data.lastClaim === today) {
-      set('daily-status', '✅');
-      const btn = document.getElementById('claim-daily');
-      if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; set('daily-text', '✅ Aaj Claim Ho Gaya'); }
-    } else {
-      set('daily-status', '🎁');
-      const btn = document.getElementById('claim-daily');
-      if (btn) { btn.disabled = false; btn.style.opacity = '1'; set('daily-text', '🎁 Daily Reward Claim Karo'); }
-    }
-    loadSpinStatus();
-  }
-
-  function switchTab(tab) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    document.getElementById(`${tab}-content`).classList.remove('hidden');
-  }
-
-  function updateDisplay() {
-    set('coin-balance', (currentUserData.coins || 0).toLocaleString());
-    set('header-coins', (currentUserData.coins || 0).toLocaleString());
-    set('profile-coins', (currentUserData.coins || 0).toLocaleString());
-    set('total-tasks', currentUserData.totalTasks || 0);
-    set('total-earned', (currentUserData.totalEarned || 0).toLocaleString());
-  }
-
-  function loadSpinStatus() {
-    const btn = document.getElementById('spin-btn'), status = document.getElementById('spin-status');
-    if (!btn || !status) return;
-    const coins = currentUserData.coins || 0;
-    if (coins >= SPIN_COST) {
-      btn.disabled = false; btn.style.opacity = '1';
-      status.innerHTML = '<span style="color:var(--success)">✅ Ready!</span>';
-    } else {
-      btn.disabled = true; btn.style.opacity = '0.55';
-      status.innerHTML = `<span style="color:var(--error)">❌ ${SPIN_COST - coins} coins aur chahiye</span>`;
-    }
-  }
-
-  async function handleSpin() {
-    if (isSpinning) return;
-    const user = auth.currentUser; if (!user) { notify('Pehle sign in karo', 'error'); return; }
-    if ((currentUserData.coins || 0) < SPIN_COST) { notify(`Spin ke liye ${SPIN_COST} coins chahiye!`, 'error'); return; }
-    isSpinning = true;
-    const btn = document.getElementById('spin-btn'), wheel = document.getElementById('wheel-of-fortune'), msg = document.getElementById('spin-message');
-    try {
-      btn.disabled = true; btn.innerHTML = '🎰 Ghoom raha hai...';
-      msg.innerHTML = '<span style="color:var(--primary)">🎰 Wheel ghoom raha hai...</span>';
-      const ref = db.collection('users').doc(user.uid);
-      await ref.update({ coins: firebase.firestore.FieldValue.increment(-SPIN_COST) });
-      currentUserData.coins = (currentUserData.coins || 0) - SPIN_COST;
-      updateDisplay(); notify(`-${SPIN_COST} coins spin ke liye kate`, 'info');
-      const wi = Math.floor(Math.random() * REWARDS.length), reward = REWARDS[wi];
-      const final = 1440 + (Math.random() * 720) + (-(wi * 45)) + ((Math.random() - 0.5) * 20);
-      wheel.style.transform = `rotate(${final}deg)`;
-      const sr = document.getElementById('spinner-result');
-      if (sr) { sr.textContent = '🎯'; sr.style.color = '#fff'; }
-      await new Promise(r => setTimeout(r, 4500));
-      if (sr) { sr.textContent = reward; sr.style.color = reward > 0 ? '#51cf66' : '#ff6b6b'; }
-      if (reward > 0) {
-        await ref.update({ coins: firebase.firestore.FieldValue.increment(reward) });
-        currentUserData.coins = (currentUserData.coins || 0) + reward;
-        updateDisplay(); animateCoin();
-        notify(`🎉 Mubarak! ${reward} coins jeete!`, 'success');
-        msg.innerHTML = `<span style="color:var(--success)">🎉 ${reward} coins jeete!</span>`;
-      } else {
-        notify('Agli baar luck hoga! 🍀', 'info');
-        msg.innerHTML = '<span style="color:var(--warning)">🍀 Is baar nahi, agli baar zaroor!</span>';
-      }
-    } catch (e) {
-      console.error(e); notify('Spin mein error. Dobara try karo.', 'error');
-      try {
-        await db.collection('users').doc(user.uid).update({ coins: firebase.firestore.FieldValue.increment(SPIN_COST) });
-        currentUserData.coins = (currentUserData.coins || 0) + SPIN_COST; updateDisplay();
-      } catch (_) {}
-    } finally {
-      isSpinning = false; btn.disabled = false; btn.innerHTML = '🎰 SPIN KARO (5 coins)';
-      setTimeout(() => wheel.style.transform = 'rotate(0deg)', 2000); loadSpinStatus();
-    }
-  }
-
-  function loadTasks() {
-    const list = document.getElementById('tasks-list'); if (!list) return;
-    list.innerHTML = '<div class="small" style="padding:10px;">Tasks load ho rahi hain...</div>';
-    try {
-      db.collection('tasks').where('active', '==', true).onSnapshot(snap => {
-        if (snap.empty) {
-          list.innerHTML = '<div class="small" style="text-align:center;padding:20px;">🎯 Abhi koi task nahi. Baad mein check karo!</div>';
-          return;
-        }
-        list.innerHTML = '';
-        snap.forEach(doc => {
-          const data = doc.data();
-          const icons = { simple: '🎯', external: '🔗', youtube: '📺', survey: '📋', social: '📱' };
-          const icon = icons[data.type] || '🎯';
-          const item = document.createElement('div');
-          item.className = 'list-item';
-          item.setAttribute('data-task-id', doc.id);
-          item.setAttribute('data-coins', data.coins || 0);
-          let buttons = '';
-          if (completedTasks.has(doc.id)) {
-            buttons = `<div class="task-buttons"><div style="background:#e8f5e9;color:#2e7d32;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;">✅ Mukammal</div></div>`;
-            item.style.opacity = '0.7';
-          } else if (data.link && data.type !== 'simple') {
-            if (openedTasks.has(doc.id)) {
-              buttons = `<div class="task-buttons"><button class="btn green" onclick="claimTask('${doc.id}',${data.coins || 0})" style="font-size:11px;padding:7px 12px;">🎁 ${data.coins || 0} Coins Lo</button></div>`;
-            } else {
-              buttons = `<div class="task-buttons"><button class="btn" onclick="openTaskLink('${data.link}','${doc.id}','${data.type}')" style="font-size:11px;padding:7px 12px;">${icon} Task Kholo</button><div style="font-size:10px;color:var(--text-secondary);margin-top:4px;text-align:center;">Pehle task pura karo</div></div>`;
-            }
-          } else {
-            buttons = `<div class="task-buttons"><button class="btn" onclick="claimTask('${doc.id}',${data.coins || 0})" style="font-size:11px;padding:7px 12px;">${icon} Claim Karo</button></div>`;
-          }
-          item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><div style="flex:1;"><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;"><span style="font-size:17px;">${icon}</span><strong style="font-size:13px;">${data.title || 'Task'}</strong></div><div class="small">${data.desc || ''}</div></div><div style="text-align:right;min-width:120px;"><div style="color:var(--success);font-weight:800;font-size:15px;margin-bottom:7px;">+${data.coins || 0}</div>${buttons}</div></div>`;
-          list.appendChild(item);
-        });
-      }, err => {
-        list.innerHTML = '<div class="small" style="padding:10px;color:red;">Tasks load nahi hueen. Refresh karo.</div>';
-      });
-    } catch (e) {
-      list.innerHTML = '<div class="small" style="padding:10px;">Connection error.</div>';
-    }
-  }
-
-  window.claimTask = async function (taskId, coins) {
-    const user = auth.currentUser;
-    if (!user) { showToast('Pehle sign in karo', 'error'); return; }
-    if (claimInProgress.has(taskId)) { notify('⏳ Pehle ka claim chal raha hai...', 'info'); return; }
-    const el = document.querySelector(`[data-task-id="${taskId}"]`);
-    if (el && !openedTasks.has(taskId) && el.querySelector('button[onclick*="openTaskLink"]')) {
-      notify('❌ Pehle task link kholo!', 'error'); return;
-    }
-    if (completedTasks.has(taskId)) {
-      notify('✅ Yeh task pehle hi complete ho chuka!', 'info');
-      const tb = el ? el.querySelector('.task-buttons') : null;
-      if (tb) tb.innerHTML = '<div style="background:#e8f5e9;color:#2e7d32;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;">✅ Mukammal</div>';
-      if (el) el.style.opacity = '0.7';
-      return;
-    }
-    claimInProgress.add(taskId);
-    const claimBtn = el ? el.querySelector('.task-buttons button') : null;
-    if (claimBtn) { claimBtn.disabled = true; claimBtn.textContent = '⏳ Ho raha hai...'; }
-    try {
-      notify('Task claim ho raha hai...', 'info');
-      const uRef = db.collection('users').doc(user.uid);
-      await db.runTransaction(async tx => {
-        const ud = await tx.get(uRef);
-        if (!ud.exists) throw new Error('User data nahi mila.');
-        const d = ud.data();
-        const existingCompleted = d.completedTaskIds || [];
-        if (existingCompleted.includes(taskId)) throw new Error('ALREADY_CLAIMED');
-        tx.update(uRef, {
-          coins: firebase.firestore.FieldValue.increment(coins),
-          totalTasks: firebase.firestore.FieldValue.increment(1),
-          totalEarned: firebase.firestore.FieldValue.increment(coins),
-          completedTaskIds: firebase.firestore.FieldValue.arrayUnion(taskId),
-          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      });
-      notify(`🎉 Task mukammal! +${coins} coins mile!`, 'success');
-      animateCoin();
-      const tb = el ? el.querySelector('.task-buttons') : null;
-      if (tb) tb.innerHTML = '<div style="background:#e8f5e9;color:#2e7d32;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;">✅ Mukammal</div>';
-      if (el) el.style.opacity = '0.7';
-      completedTasks.add(taskId); openedTasks.delete(taskId); saveTaskStates();
-      currentUserData.coins = (currentUserData.coins || 0) + coins;
-      currentUserData.totalTasks = (currentUserData.totalTasks || 0) + 1;
-      currentUserData.totalEarned = (currentUserData.totalEarned || 0) + coins;
-      updateDisplay();
-    } catch (e) {
-      if (e.message === 'ALREADY_CLAIMED') {
-        notify('✅ Yeh task pehle hi complete ho chuka!', 'info');
-        completedTasks.add(taskId); saveTaskStates();
-        const tb = el ? el.querySelector('.task-buttons') : null;
-        if (tb) tb.innerHTML = '<div style="background:#e8f5e9;color:#2e7d32;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;">✅ Mukammal</div>';
-      } else {
-        console.error(e); notify('Task claim mein error. Dobara try karo.', 'error');
-        if (claimBtn) { claimBtn.disabled = false; claimBtn.textContent = '🎁 Claim Karo'; }
-      }
-    } finally {
-      claimInProgress.delete(taskId);
-    }
-  };
-
-  window.openTaskLink = function (link, taskId, taskType) {
-    if (!link) { notify('Koi link nahi hai', 'error'); return; }
-    const msgs = { youtube: '📺 Video dekho, like/subscribe karo, phir wapas aao!', survey: '📋 Survey complete karo, phir wapas aao!', social: '📱 Follow/like karo, phir wapas aao!' };
-    notify(msgs[taskType] || '🔗 Task complete karo aur wapas aao!', 'info', 5000);
-    openedTasks.add(taskId); saveTaskStates();
-    taskReturnTimers.set(taskId, setTimeout(() => {
-      updateTaskBtn(taskId, taskType);
-      notify('✅ Wapas aaiye! Reward claim karo.', 'success', 3000);
-      taskReturnTimers.delete(taskId);
-    }, 10000));
-    const w = window.open(link, '_blank');
-    if (!w) notify('Popups allow karo browser settings mein', 'error');
-  };
-
-  function updateTaskBtn(taskId) {
-    const el = document.querySelector(`[data-task-id="${taskId}"] .task-buttons`);
-    const coins = document.querySelector(`[data-task-id="${taskId}"]`)?.dataset?.coins || 0;
-    if (el) el.innerHTML = `<button class="btn green" onclick="claimTask('${taskId}',${coins})" style="font-size:11px;padding:7px 12px;">🎁 ${coins} Coins Lo</button>`;
-  }
-
-  function detectUserReturn() {
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        taskReturnTimers.forEach((t, id) => {
-          clearTimeout(t);
-          setTimeout(() => { updateTaskBtn(id); notify('✅ Wapas aaiye! Reward claim karo.', 'success', 4000); }, 1000);
-        });
-        taskReturnTimers.clear();
-      }
-    });
-  }
-
-  // ===== WITHDRAWAL HISTORY - PERMANENT & PROFESSIONAL =====
-  function buildWCard(d) {
-    const status = d.status || 'pending';
-    const statusMap = {
-      pending:  { cls: 'processing', label: '⏳ Processing', dotColor: '#f57c00' },
-      approved: { cls: 'completed',  label: '✅ Completed',  dotColor: '#2e7d32' },
-      rejected: { cls: 'rejected',   label: '❌ Rejected',   dotColor: '#c62828' }
-    };
-    const s = statusMap[status] || statusMap.pending;
-    const logoSrc = PAY_LOGOS[d.method];
-    const logoHtml = logoSrc
-      ? `<img src="${logoSrc}" style="width:28px;height:28px;object-fit:contain;" alt="${d.method}">`
-      : '<span style="font-size:22px;">🏦</span>';
-
-    return `<div class="w-card ${s.cls}">
-      <div class="w-top-row">
-        <div class="w-method-logo">${logoHtml}</div>
-        <div class="w-method-info">
-          <div class="w-method-name">${d.method || '–'}</div>
-          <div class="w-coins-amount">${(d.coins || 0).toLocaleString()} coins</div>
-        </div>
-        <span class="w-status-badge ${s.cls}">${s.label}</span>
-      </div>
-      <div class="w-details">
-        <div class="w-detail-row">
-          <span class="w-detail-label">📱 Account</span>
-          <span class="w-detail-val">${maskAccount(d.destination)}</span>
-        </div>
-        <div class="w-detail-row">
-          <span class="w-detail-label">📅 Date &amp; Time</span>
-          <span class="w-detail-val" style="font-family:inherit;">${formatDateTime(d.createdAt)}</span>
-        </div>
-        <div class="w-detail-row">
-          <span class="w-detail-label">🔖 TXN ID</span>
-          <span class="w-detail-val">${d.txnId || '–'}</span>
-        </div>
-      </div>
-      ${d.rejectionReason ? `<div class="w-reject-reason">❌ Wajah: ${d.rejectionReason}</div>` : ''}
-    </div>`;
-  }
-
-  async function loadWithdrawHistory(uid) {
-    try {
-      db.collection('withdraw_requests')
-        .where('userId', '==', uid)
-        .orderBy('createdAt', 'desc')
-        .limit(50)
-        .onSnapshot(snap => {
-          const cont = document.getElementById('withdraw-history');
-          const badge = document.getElementById('w-count-badge');
-          if (!cont) return;
-          if (snap.empty) {
-            cont.innerHTML = '<div style="text-align:center;padding:28px 16px;color:var(--text-secondary);"><div style="font-size:36px;margin-bottom:10px;">📭</div><div style="font-size:13px;">Abhi tak koi withdrawal nahi.</div></div>';
-            if (badge) badge.textContent = '0';
-            set('profile-withdrawals', '0'); return;
-          }
-          cont.innerHTML = '';
-          let count = 0;
-          snap.forEach(doc => {
-            count++;
-            const d = doc.data();
-            const div = document.createElement('div');
-            div.innerHTML = buildWCard(d);
-            cont.appendChild(div.firstElementChild);
-          });
-          if (badge) badge.textContent = count;
-          set('profile-withdrawals', count);
-          if (!window.wHistInit) { window.wHistInit = true; } else {
-            snap.docChanges().forEach(ch => {
-              if (ch.type === 'modified') {
-                const d = ch.doc.data();
-                if (d.status === 'approved') notify(`✅ ${d.coins} coins ki withdrawal Completed!`, 'success', 6000);
-                else if (d.status === 'rejected') notify(`❌ Withdrawal reject hui${d.rejectionReason ? ': ' + d.rejectionReason : ''}`, 'error', 6000);
-              }
-            });
-          }
-        }, err => { console.error('Withdraw history error:', err); });
-    } catch (e) { console.error(e); }
-  }
-
-  // ===== WITHDRAW MODAL =====
-  window.openWithdrawModal = function (method, min) {
-    _wMethod = method; _wMin = min;
-    const coins = currentUserData.coins || 0;
-    document.getElementById('wm-title').textContent = method + ' Withdrawal';
-    document.getElementById('wm-min-text').textContent = `Min: ${min} coins`;
-    document.getElementById('wm-bal').textContent = coins.toLocaleString();
-    document.getElementById('wm-error').textContent = '';
-    document.getElementById('wm-amount').value = '';
-    document.getElementById('wm-account').value = '';
-    const lblMap = {
-      Easypaisa: '📱 Easypaisa Number (03XXXXXXXXX)',
-      JazzCash: '🎵 JazzCash Number (03XXXXXXXXX)',
-      Bank: '🏦 Bank IBAN / Account Number',
-      SadaPay: '📲 SadaPay Number (03XXXXXXXXX)'
-    };
-    document.getElementById('wm-acc-lbl').textContent = lblMap[method] || '📱 Account Number';
-    const logoWrap = document.getElementById('wm-logo-wrap');
-    const logoSrc = PAY_LOGOS[method];
-    logoWrap.innerHTML = logoSrc
-      ? `<img src="${logoSrc}" style="width:30px;height:30px;object-fit:contain;" alt="${method}">`
-      : '<span style="font-size:24px;">🏦</span>';
-    document.getElementById('withdraw-modal').classList.remove('hidden');
-  };
-
-  window.closeWithdrawModal = function () {
-    document.getElementById('withdraw-modal').classList.add('hidden');
-  };
-
-  window.submitWithdrawal = async function () {
-    const user = auth.currentUser; if (!user) return;
-    const amtEl = document.getElementById('wm-amount');
-    const accEl = document.getElementById('wm-account');
-    const errEl = document.getElementById('wm-error');
-    const c = parseInt(amtEl.value);
-    const dest = accEl.value.trim();
-    const curr = currentUserData.coins || 0;
-    if (isNaN(c) || c < _wMin) { errEl.textContent = `Minimum ${_wMin} coins darj karein.`; return; }
-    if (c > curr) { errEl.textContent = `Aapke paas sirf ${curr} coins hain.`; return; }
-    if (!dest || dest.length < 5) { errEl.textContent = 'Valid account number darj karein (minimum 5 digits).'; return; }
-    errEl.textContent = '';
-    const btn = document.getElementById('wm-submit-btn');
-    btn.disabled = true; btn.textContent = '⏳ Submit ho raha hai...';
-    try {
-      const txnId = genTxnId();
-      await db.collection('withdraw_requests').add({
-        userId: user.uid, email: user.email, method: _wMethod,
-        destination: dest, coins: c, status: 'pending',
-        txnId: txnId,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        userName: user.email.split('@')[0], country: 'Pakistan'
-      });
-      await db.collection('users').doc(user.uid).update({
-        coins: firebase.firestore.FieldValue.increment(-c),
-        lastWithdrawal: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      closeWithdrawModal();
-      notify(`✅ ${c} coins ki request submit! TXN: ${txnId}`, 'success', 6000);
-    } catch (e) {
-      console.error(e); errEl.textContent = 'Error aaya. Dobara try karein.';
-    } finally {
-      btn.disabled = false; btn.textContent = '💸 Request Submit Karein';
-    }
-  };
-
-  async function loadRecentActivity(uid) {
-    try {
-      db.collection('task_activities').where('userId', '==', uid)
-        .orderBy('timestamp', 'desc').limit(10)
-        .onSnapshot(snap => {
-          const cont = document.getElementById('recent-activity');
-          if (!cont) return;
-          if (snap.empty) { cont.innerHTML = '<div class="small">Koi activity nahi abhi tak.</div>'; return; }
-          cont.innerHTML = '';
-          snap.forEach(doc => {
-            const d = doc.data();
-            const item = document.createElement('div');
-            item.className = 'list-item';
-            const date = d.timestamp?.toDate()?.toLocaleDateString('en-PK') || 'Haal hi mein';
-            item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="font-size:12px;">✅ Task Complete</strong><div class="small">${date}</div></div><div style="color:var(--success);font-weight:700;">+${d.coinsEarned || 0}</div></div>`;
-            cont.appendChild(item);
-          });
-        }, () => {
-          const cont = document.getElementById('recent-activity');
-          if (cont) cont.innerHTML = '<div class="small">Activity load nahi hui.</div>';
-        });
-    } catch (e) { console.error(e); }
-  }
-
-  function setupSystemListeners() {
-    try {
-      db.collection('system_config').doc('app_settings').onSnapshot(doc => {
-        if (doc.exists) window.appConfig = Object.assign(window.appConfig || {}, doc.data());
-      }, () => {});
-      db.collection('global_notifications').where('active', '==', true).where('expiresAt', '>', new Date()).onSnapshot(snap => {
-        snap.docChanges().forEach(ch => {
-          if (ch.type === 'added') { const n = ch.doc.data(); notify(n.message, n.type || 'info'); }
-        });
-      }, () => {});
-    } catch (e) {}
-  }
-
-  function setupUserStatusListener(uid) {
-    try {
-      db.collection('users').doc(uid).onSnapshot(doc => {
-        if (doc.exists) {
-          const d = doc.data();
-          if (d.banned) { notify('⚠️ Account suspend hai. Support se rabta karein.', 'error'); document.body.style.pointerEvents = 'none'; return; }
-          if (d.isVIP && !window.wasVIP) { notify('🎉 Mubarak! Aap VIP member ban gaye!', 'success'); window.wasVIP = true; }
-          updateUI(d, auth.currentUser);
-        }
-      });
-    } catch (e) {}
-  }
-
-  // ===== AUTH - SIGN IN =====
-  async function handleSignIn(e) {
-    e.preventDefault();
-    const email = document.getElementById('email-input').value.trim();
-    const pass = document.getElementById('password-input').value;
-    const msg = document.getElementById('auth-message'), btn = document.getElementById('signin-btn');
-    if (!email || !pass) { msg.textContent = 'Email aur password enter karo'; msg.className = 'form-message error'; return; }
-    try {
-      btn.textContent = 'Sign in ho raha hai...'; btn.disabled = true;
-      msg.textContent = 'Connect ho raha hai...'; msg.className = 'form-message info';
-      await auth.signInWithEmailAndPassword(email, pass);
-      msg.textContent = 'Sign in hua!'; msg.className = 'form-message success';
-      showToast('Khush Aamdeed! 👋');
-      // Hide referral field on login
-      document.getElementById('ref-code-wrap').style.display = 'none';
-    } catch (err) {
-      const errs = {
-        'auth/user-not-found': '🔍 Account nahi mila. Naya account banao.',
-        'auth/wrong-password': '🔑 Galat password.',
-        'auth/invalid-email': '📧 Email galat hai.',
-        'auth/network-request-failed': '🌐 Internet check karo.',
-        'auth/too-many-requests': '🚫 Bahut attempts. Thodi der baad try karo.',
-        'auth/invalid-credential': '🔑 Email ya password galat hai.'
-      };
-      msg.textContent = errs[err.code] || `Error: ${err.message}`; msg.className = 'form-message error';
-      btn.textContent = '🔐 Sign In'; btn.disabled = false;
-    }
-  }
-
-  // ===== AUTH - SIGN UP WITH REFERRAL =====
-  async function handleSignUp(e) {
-    e.preventDefault();
-    const email = document.getElementById('email-input').value.trim();
-    const pass = document.getElementById('password-input').value;
-    const refInput = document.getElementById('ref-code-input').value.trim().toUpperCase();
-    const msg = document.getElementById('auth-message'), btn = document.getElementById('signup-btn');
-    if (!email || pass.length < 6) {
-      msg.textContent = 'Sahih email aur 6+ characters ka password darj karo'; msg.className = 'form-message error'; return;
-    }
-    // Show referral field if hidden
-    const refWrap = document.getElementById('ref-code-wrap');
-    if (refWrap.style.display === 'none') {
-      refWrap.style.display = 'block';
-      msg.textContent = 'Referral code darj karein (optional) aur dobara click karein.'; msg.className = 'form-message info';
-      return;
-    }
-    try {
-      btn.textContent = 'Account ban raha hai...'; btn.disabled = true;
-      msg.textContent = 'Account ban raha hai...'; msg.className = 'form-message info';
-
-      // ✅ Verify referral code BEFORE creating account
-      let referrerUid = null;
-      if (refInput && refInput.length >= 4) {
-        const refSnap = await db.collection('users').where('referralCode', '==', refInput).limit(1).get();
-        if (refSnap.empty) {
-          msg.textContent = '❌ Referral code galat hai ya exist nahi karta.'; msg.className = 'form-message error';
-          btn.textContent = '✨ Naya Account Banao'; btn.disabled = false; return;
-        }
-        referrerUid = refSnap.docs[0].id;
-      }
-
-      const cred = await auth.createUserWithEmailAndPassword(email, pass);
-      const newCode = genCode();
-
-      // ✅ Create new user doc
-      await db.collection('users').doc(cred.user.uid).set({
-        email: cred.user.email, coins: 500, totalTasks: 0, totalEarned: 500,
-        referralCode: newCode, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        uid: cred.user.uid, country: 'Pakistan', completedTaskIds: [],
-        referralCount: 0, referralEarned: 0,
-        usedReferralCode: refInput || null,
-        referredBy: referrerUid || null
-      });
-
-      // ✅ If valid referral - reward referrer using transaction (no duplicates)
-      if (referrerUid) {
-        try {
-          await db.runTransaction(async tx => {
-            const refUserRef = db.collection('users').doc(referrerUid);
-            const refUserDoc = await tx.get(refUserRef);
-            if (!refUserDoc.exists) return;
-            // Prevent duplicate referral rewards
-            const refData = refUserDoc.data();
-            const alreadyRewarded = (refData.referredUsers || []).includes(cred.user.uid);
-            if (alreadyRewarded) return;
-            tx.update(refUserRef, {
-              coins: firebase.firestore.FieldValue.increment(100),
-              totalEarned: firebase.firestore.FieldValue.increment(100),
-              referralCount: firebase.firestore.FieldValue.increment(1),
-              referralEarned: firebase.firestore.FieldValue.increment(100),
-              referredUsers: firebase.firestore.FieldValue.arrayUnion(cred.user.uid)
-            });
-          });
-          // Save referral record permanently
-          await db.collection('referral_records').add({
-            referrerId: referrerUid, newUserId: cred.user.uid,
-            newUserEmail: cred.user.email, coinsAwarded: 100,
-            referralCode: refInput,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          msg.textContent = '🎉 Account ban gaya! Referral bonus diya gaya! +500 coins mile!'; msg.className = 'form-message success';
-        } catch (refErr) { console.error('Referral error:', refErr); }
-      } else {
-        msg.textContent = 'Account ban gaya! 500 welcome coins mile! 🎉'; msg.className = 'form-message success';
-      }
-      showToast('Khush Aamdeed! 500 bonus coins! 🎉');
-    } catch (err) {
-      const errs = {
-        'auth/email-already-in-use': '✉️ Email pehle se registered. Sign In karo.',
-        'auth/invalid-email': '📧 Email galat hai.',
-        'auth/weak-password': '🔒 Password kamzor. 6+ characters use karo.',
-        'auth/network-request-failed': '🌐 Internet check karo.'
-      };
-      msg.textContent = errs[err.code] || `Error: ${err.message}`; msg.className = 'form-message error';
-      btn.textContent = '✨ Naya Account Banao'; btn.disabled = false;
-    }
-  }
-
-  async function claimDailyReward() {
-    const user = auth.currentUser; if (!user) { showToast('Pehle sign in karo', 'error'); return; }
-    const btn = document.getElementById('claim-daily'), txt = document.getElementById('daily-text');
-    const msg = document.getElementById('daily-msg'), today = new Date().toISOString().slice(0, 10);
-    try {
-      btn.disabled = true; txt.textContent = 'Claim ho raha hai...';
-      await db.runTransaction(async tx => {
-        const ref = db.collection('users').doc(user.uid), doc = await tx.get(ref), d = doc.data() || {};
-        if (d.lastClaim === today) throw new Error('Aaj ka reward pehle hi le liya! Kal wapas aao 🌙');
-        tx.update(ref, {
-          coins: firebase.firestore.FieldValue.increment(50),
-          lastClaim: today,
-          totalEarned: firebase.firestore.FieldValue.increment(50),
-          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      });
-      txt.textContent = '✅ Claim Ho Gaya!';
-      msg.textContent = 'Roz ka inaam mila! +50 coins 🎉'; msg.style.color = 'var(--success)'; msg.style.fontWeight = '600';
-      animateCoin(); set('daily-status', '✅'); notify('🎁 Daily reward mila! +50 coins', 'success');
-      setTimeout(() => { txt.textContent = '🎁 Aaj Ka Claim Ho Gaya'; btn.style.opacity = '0.55'; }, 2000);
-    } catch (err) {
-      txt.textContent = '🎁 Daily Reward Claim Karo'; btn.disabled = false;
-      msg.textContent = err.message; msg.style.color = 'var(--error)'; notify(err.message, 'error');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('signin-btn').addEventListener('click', handleSignIn);
-    document.getElementById('signup-btn').addEventListener('click', handleSignUp);
-    document.getElementById('claim-daily').addEventListener('click', claimDailyReward);
-    document.getElementById('spin-btn').addEventListener('click', handleSpin);
-    document.getElementById('logout').addEventListener('click', () => { auth.signOut(); showToast('Sign out ho gaye'); });
-
-    document.getElementById('copy-ref').addEventListener('click', async () => {
-      const code = document.getElementById('ref-code').textContent;
-      const url = `${location.origin}${location.pathname}?ref=${code}`;
-      try { await navigator.clipboard.writeText(url); showToast('Referral link copy ho gaya! 📋'); } catch (_) { showToast('Copy nahi hua', 'error'); }
-    });
-    document.getElementById('share-wa').addEventListener('click', () => {
-      const code = document.getElementById('ref-code').textContent;
-      window.open(`https://wa.me/?text=${encodeURIComponent(`🇵🇰 Mreward PRO join karo aur ghar baithe kamao!\nCode: ${code}\n🔗 ${location.origin}${location.pathname}?ref=${code}`)}`, '_blank');
-    });
-    document.getElementById('share-tg').addEventListener('click', () => {
-      const code = document.getElementById('ref-code').textContent;
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(location.origin + location.pathname + '?ref=' + code)}&text=${encodeURIComponent('🇵🇰 Mreward PRO Pakistan join karo!')}`, '_blank');
-    });
-
-    // Close modal on background click
-    document.getElementById('withdraw-modal').addEventListener('click', function(e) {
-      if (e.target === this) closeWithdrawModal();
-    });
-
-    // Handle referral code from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlRef = urlParams.get('ref');
-    if (urlRef) {
-      const refInput = document.getElementById('ref-code-input');
-      if (refInput) { refInput.value = urlRef.toUpperCase(); }
-    }
-
-    // Toggle referral field: show on signup, hide on signin
-    document.getElementById('signup-btn').addEventListener('mouseenter', () => {
-      document.getElementById('ref-code-wrap').style.display = 'block';
-    }, { once: false });
-
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => switchTab(item.dataset.tab));
-    });
+  ['txnId','senderNumber','senderName'].forEach(id => {
+    document.getElementById(id).disabled = true;
   });
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST NOTIFICATION
+═══════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ═══════════════════════════════════════════════
+   CLEAR ERRORS ON INPUT
+═══════════════════════════════════════════════ */
+document.getElementById('txnId').addEventListener('input', () => showErr('txnId', 'errTxn', false));
+document.getElementById('senderNumber').addEventListener('input', () => showErr('senderNumber', 'errPhone', false));
+document.getElementById('senderName').addEventListener('input', () => showErr('senderName', 'errName', false));
+
+/* ═══════════════════════════════════════════════
+   FUTURE: FIREBASE INTEGRATION HOOK
+   Replace saveToLocalStorage() with:
+
+   async function saveToFirebase(payload) {
+     const docRef = await addDoc(collection(db, "paymentRequests"), payload);
+     console.log("Saved with ID:", docRef.id);
+   }
+
+   And call it inside confirmPayment() instead.
+═══════════════════════════════════════════════ */
 </script>
 </body>
 </html>
